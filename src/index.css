@@ -1,0 +1,36 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+/*
+ * Landify design tokens (sampled from the landing page design).
+ * Tailwind v4 turns each --color-* into utilities: bg-brand-900, text-gold-500, etc.
+ * Using Tailwind v3? See tailwind.config.v3.js in this folder instead.
+ */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* Greens */
+  --color-brand-50: #eaf1eb;   /* icon tiles, step circles */
+  --color-brand-600: #0b5d3b;  /* primary buttons, CTA band, links */
+  --color-brand-700: #094d31;  /* primary hover */
+  --color-brand-900: #073d2b;  /* "Why choose us" band */
+
+  /* Gold accent */
+  --color-gold-400: #d6b23f;   /* gold hover */
+  --color-gold-500: #c9a227;   /* Get Started / Explore buttons, eyebrows on dark */
+
+  /* Neutrals */
+  --color-ink: #13261e;        /* headings */
+  --color-body: #5f6b66;       /* paragraph text */
+  --color-line: #e3e7e4;       /* borders, dividers */
+  --color-canvas: #f7f8f6;     /* page background */
+  --color-sand: #f1eee5;       /* payment plans band */
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-canvas text-ink antialiased;
+}
