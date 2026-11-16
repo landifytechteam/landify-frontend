@@ -20,7 +20,7 @@ import {
   Pagination,
   Stacked,
 } from "../../components/dashboard/DataTable";
-import { useToast } from "../../components/dashboard/Toast";
+import { useToast } from "../../components/dashboard/useToast";
 import { downloadCsv } from "../../utils/csv";
 import { dayMonth, fullDateTime, timeWAT, yearOf } from "../../utils/format";
 

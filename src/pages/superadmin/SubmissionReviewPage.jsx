@@ -7,8 +7,8 @@ import { Breadcrumbs, Button, DetailList, ErrorState, FormError, LoadingState, N
 import { Field, Select } from "../../components/dashboard/controls";
 import { DataTable, Stacked } from "../../components/dashboard/DataTable";
 import { ImageGallery } from "../../components/superadmin/ImageGallery";
-import { useToast } from "../../components/dashboard/Toast";
-import { useRefreshBadges } from "./SuperAdminLayout";
+import { useToast } from "../../components/dashboard/useToast";
+import { useRefreshBadges } from "../../context/superadmin/useRefreshBadges";
 import { dayMonth, fullDate, fullDateTime, naira, timeWAT } from "../../utils/format";
 
 const companyStanding = { active: "Active · Registration verified", under_review: "Under review · Verification in progress", suspended: "Suspended · Access restricted" };

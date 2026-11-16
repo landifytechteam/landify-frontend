@@ -5,7 +5,7 @@ import { superAdminApi } from "../../context/superadmin/superAdminApi";
 import { useAction, useRequest } from "../../context/superadmin/hooks";
 import { Button, ErrorState, FormError, LoadingState, PageHeader, Panel, StatusBadge } from "../../components/dashboard/ui";
 import { LockIcon, Select, Tabs, Toggle } from "../../components/dashboard/controls";
-import { useToast } from "../../components/dashboard/Toast";
+import { useToast } from "../../components/dashboard/useToast";
 import { fullDateTime } from "../../utils/format";
 
 // Every setting on the page. `options` makes it a dropdown, otherwise it's a switch.
