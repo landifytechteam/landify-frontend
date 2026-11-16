@@ -5,7 +5,7 @@ import { useListState, useRequest } from "../../context/superadmin/hooks";
 import { Button, ErrorState, Notice, PageHeader, Panel, StatCard, StatGrid, StatusBadge } from "../../components/dashboard/ui";
 import { FilterBar, SearchInput, Select, Tabs } from "../../components/dashboard/controls";
 import { DataTable, Pagination, Stacked } from "../../components/dashboard/DataTable";
-import { useToast } from "../../components/dashboard/Toast";
+import { useToast } from "../../components/dashboard/useToast";
 import { downloadCsv } from "../../utils/csv";
 import { dayMonth, fullDateTime, timeAgo, timeWAT, yearOf } from "../../utils/format";
 

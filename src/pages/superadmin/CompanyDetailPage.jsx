@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ArrowRight, Ban, CircleCheck, Pencil, UserPlus } from "lucide-react";
 import { superAdminApi } from "../../context/superadmin/superAdminApi";
 import { useAction, useRequest } from "../../context/superadmin/hooks";
@@ -9,8 +9,8 @@ import { DataTable, Stacked } from "../../components/dashboard/DataTable";
 import { ReasonDialog } from "../../components/dashboard/Modal";
 import { CompanyFormModal } from "../../components/superadmin/CompanyFormModal";
 import { InviteAdminModal } from "../../components/superadmin/InviteAdminModal";
-import { useToast } from "../../components/dashboard/Toast";
-import { useRefreshBadges } from "./SuperAdminLayout";
+import { useToast } from "../../components/dashboard/useToast";
+import { useRefreshBadges } from "../../context/superadmin/useRefreshBadges";
 import { dayMonth, fullDate, fullDateTime, timeWAT } from "../../utils/format";
 
 const SUBMISSION_FILTERS = [

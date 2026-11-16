@@ -7,7 +7,7 @@ import { Button, ErrorState, Notice, PageHeader, Panel, StatCard, StatGrid, Stat
 import { FilterBar, SearchInput, Select } from "../../components/dashboard/controls";
 import { DataTable, Pagination, Stacked } from "../../components/dashboard/DataTable";
 import { CompanyFormModal } from "../../components/superadmin/CompanyFormModal";
-import { useToast } from "../../components/dashboard/Toast";
+import { useToast } from "../../components/dashboard/useToast";
 import { downloadCsv } from "../../utils/csv";
 import { fullDate, fullDateTime } from "../../utils/format";
 
