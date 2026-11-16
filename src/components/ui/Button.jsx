@@ -1,4 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
+import { AppLink } from "./AppLink";
 
 const variants = {
   gold: "bg-gold-500 text-ink hover:bg-gold-400",
@@ -9,12 +10,12 @@ const variants = {
 
 export function ButtonLink({ href, children, variant = "gold", arrow = false, className = "" }) {
   return (
-    <a
+    <AppLink
       href={href}
       className={`inline-flex h-13 items-center justify-center gap-3 rounded-md px-6 text-sm font-semibold transition-colors ${variants[variant]} ${className}`}
     >
       {children}
       {arrow && <ArrowUpRight className="h-4 w-4" aria-hidden />}
-    </a>
+    </AppLink>
   );
 }

@@ -11,28 +11,38 @@ import { getErrorMessage } from "../../utils/apiError";
  * Pass `null` as params to skip the request.
  */
 export function useRequest(fn, params) {
-  const [state, setState] = useState({ data: null, loading: true, error: null });
+  // Keep the latest `fn` without re-running the request when it changes.
+  // (Updated in an effect: writing a ref during render is not allowed.)
   const fnRef = useRef(fn);
-  fnRef.current = fn;
+  useEffect(() => {
+    fnRef.current = fn;
+  });
+
   const key = JSON.stringify(params ?? null);
   const [version, setVersion] = useState(0);
+  const requestId = `${key}#${version}`;
+  // `doneFor` says which request the stored data/error belong to. While it
+  // differs from the current request we're loading, so there's no need to
+  // call setState at the start of the effect.
+  const [state, setState] = useState({ data: null, error: null, doneFor: null });
 
   useEffect(() => {
     if (params === null) return;
     let cancelled = false; // ignore answers that arrive after a newer request started
-    setState((s) => ({ ...s, loading: true, error: null }));
     fnRef
       .current(params)
-      .then((data) => !cancelled && setState({ data, loading: false, error: null }))
-      .catch((err) => !cancelled && setState((s) => ({ ...s, loading: false, error: getErrorMessage(err, "Couldn't load this data.") })));
+      .then((data) => !cancelled && setState({ data, error: null, doneFor: requestId }))
+      .catch((err) => !cancelled && setState((s) => ({ ...s, error: getErrorMessage(err, "Couldn't load this data."), doneFor: requestId })));
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, version]);
+  }, [requestId]);
 
+  const loading = params !== null && state.doneFor !== requestId;
   const reload = useCallback(() => setVersion((v) => v + 1), []);
-  return { ...state, reload };
+  // Old data stays on screen while reloading; an old error is hidden meanwhile.
+  return { data: state.data, loading, error: loading ? null : state.error, reload };
 }
 
 /**

@@ -12,13 +12,15 @@ import {
   ShieldCheck,
   Users,
   Wallet,
+  KeyRound,
 } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Sidebar + header setup for every role. The dashboard shell reads one entry
 // based on the logged-in user's role, so adding a role means adding an entry.
 //
-// Keys must match the backend's `user.role` values (same as homeForRole).
+// Keys must match the `role` prop passed to <DashboardLayout role="..."> in
+// App.jsx: superadmin, admin (Company Admin), salespartner, client.
 // `badgeKey` links a menu item to a live count passed into DashboardLayout.
 // ---------------------------------------------------------------------------
 
@@ -42,6 +44,7 @@ export const navForRole = {
       { label: "All properties", to: "/superadmin/properties", icon: LandPlot },
       { label: "Audit activity", to: "/superadmin/audit", icon: History },
       { label: "System settings", to: "/superadmin/settings", icon: Settings2 },
+      { label: "Account security", to: "/superadmin/account", icon: KeyRound },
     ],
     note: {
       title: "Platform-level access",
@@ -50,7 +53,7 @@ export const navForRole = {
   },
 
   // TODO: replace these menus with the real ones once their designs arrive.
-  company: {
+  admin: {
     roleLabel: "Company Admin",
     userTitle: "Company administrator",
     scopeLabel: "Company",
@@ -62,9 +65,10 @@ export const navForRole = {
       { label: "Clients", to: "/admin/clients", icon: Users },
       { label: "Payments", to: "/admin/payments", icon: CreditCard },
       { label: "Settings", to: "/admin/settings", icon: Settings2 },
+      { label: "Leads", to: "/admin/leads", icon: Users },
     ],
   },
-  partner: {
+  salespartner: {
     roleLabel: "Sales Partner",
     userTitle: "Sales partner",
     scopeLabel: "My sales",

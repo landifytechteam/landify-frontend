@@ -10,6 +10,8 @@ import { mockApi } from "./mockApi";
 //     VITE_USE_MOCKS=false
 // You can also switch one function at a time by editing `superAdminApi` below.
 //
+// ⚠️ Only the functions marked ✅ exist on the backend so far. The rest are
+// guesses until the backend dev adds them, so keep VITE_USE_MOCKS on for those.
 // TODO: the paths and query names are guesses. Confirm each one with your
 // backend dev, and make sure each response has the same shape the mock returns
 // (open mockApi.js to see it).
@@ -35,6 +37,8 @@ const realApi = {
   inviteAdmin: (body) => data(api.post("/superadmin/admins/invitations", body)),
   resendInvite: (id) => data(api.post(`/superadmin/admins/${id}/resend-invitation`)),
   setAdminAccess: (id, body) => data(api.patch(`/superadmin/admins/${id}/access`, body)),
+  // ✅ live endpoint: DELETE /auth/admin/users/:targetUserId (needs the real user id)
+  deleteUser: (id) => data(api.delete(`/auth/admin/users/${id}`)),
 
   // Moderation
   getModerationQueue: (params) => data(api.get("/superadmin/moderation", { params })),
@@ -51,4 +55,17 @@ const realApi = {
 
 const USE_MOCKS = import.meta.env.VITE_USE_MOCKS !== "false";
 
-export const superAdminApi = USE_MOCKS ? mockApi : realApi;
+// ✅ LIVE endpoints (in the backend's Swagger). These act on real accounts,
+// so they always use the real API, even while the screens above use mock data.
+const liveApi = {
+  // Change the logged-in super admin's email and/or password
+  // body: { currentPassword, newEmail?, newPassword? }   (401 = wrong current password)
+  updateCredentials: (body) => data(api.put("/auth/super-admin/credentials", body)),
+  // Permanently delete your own super admin account. 400 if you're the last one.
+  resignAccount: (password) => data(api.delete("/auth/super-admin/self", { data: { password } })),
+};
+
+export const superAdminApi = {
+  ...(USE_MOCKS ? mockApi : realApi),
+  ...liveApi,
+};

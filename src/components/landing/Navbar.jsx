@@ -1,12 +1,14 @@
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { ButtonLink } from "../ui/Button";
+import { AppLink } from "../ui/AppLink";
 import { navLinks, routes } from "../../data/landing";
 
 export function Navbar() {
-  // Using React Router? Swap this for useLocation().pathname.
-  const pathname = window.location.pathname;
+  // useLocation() updates on every route change; window.location would not re-render
+  const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
 
   return (
@@ -17,7 +19,7 @@ export function Navbar() {
         {navLinks.map((link) => {
           const active = link.href === pathname;
           return (
-            <a
+            <AppLink
               key={link.label}
               href={link.href}
               className={`relative text-sm transition-colors ${
@@ -28,15 +30,15 @@ export function Navbar() {
               {active && (
                 <span className="absolute -bottom-2 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-gold-500" />
               )}
-            </a>
+            </AppLink>
           );
         })}
       </nav>
 
       <div className="hidden items-center gap-7 md:flex">
-        <a href={routes.login} className="text-sm font-semibold text-ink">
+        <Link to={routes.login} className="text-sm font-semibold text-ink">
           Log In
-        </a>
+        </Link>
         <ButtonLink href={routes.signup} arrow>
           Get Started
         </ButtonLink>
@@ -56,18 +58,18 @@ export function Navbar() {
         <div className="absolute inset-x-0 top-24 z-50 border-y border-line bg-white px-4 py-6 shadow-lg md:hidden">
           <nav className="flex flex-col gap-4" aria-label="Mobile">
             {navLinks.map((link) => (
-              <a
+              <AppLink
                 key={link.label}
                 href={link.href}
                 className="text-base text-ink"
                 onClick={() => setOpen(false)}
               >
                 {link.label}
-              </a>
+              </AppLink>
             ))}
-            <a href={routes.login} className="text-base font-semibold text-ink">
+            <Link to={routes.login} className="text-base font-semibold text-ink" onClick={() => setOpen(false)}>
               Log In
-            </a>
+            </Link>
             <ButtonLink href={routes.signup} arrow className="mt-2">
               Get Started
             </ButtonLink>

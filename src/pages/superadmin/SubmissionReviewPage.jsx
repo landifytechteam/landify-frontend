@@ -134,13 +134,15 @@ function PropertyFacts({ s }) {
  */
 function Documents({ s, isPending }) {
   const toast = useToast();
-  const [docs, setDocs] = useState(s.documents);
-  useEffect(() => setDocs(s.documents), [s.documents]);
+  // Only remember which files were opened; the list itself always comes from `s`,
+  // so a reload shows fresh documents without copying them into state.
+  const [openedFiles, setOpenedFiles] = useState(() => new Set());
+  const docs = s.documents.map((d) => (openedFiles.has(d.file) ? { ...d, reviewed: true } : d));
 
   const open = (doc) => {
     if (doc.url) window.open(doc.url, "_blank", "noopener");
     else toast(`${doc.file} would open here once the backend serves files.`);
-    setDocs((list) => list.map((d) => (d.file === doc.file ? { ...d, reviewed: true } : d)));
+    setOpenedFiles((set) => new Set(set).add(doc.file));
   };
 
   const columns = [

@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { navForRole } from "../../data/navigation";
 import useAuth from "../../context/useAuth";
 import { ToastProvider } from "./Toast";
+import { LoadingState } from "./ui";
 
 export function DashboardLayout({ role, badges, footerLabel, onSearch }) {
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
-  const nav = navForRole[role] ?? navForRole[user?.role];
+  const nav = navForRole[role];
 
   if (!nav) return <p className="p-8 text-body">No dashboard is set up for this role yet.</p>;
 
@@ -29,7 +30,11 @@ export function DashboardLayout({ role, badges, footerLabel, onSearch }) {
         <Topbar nav={nav} onMenuClick={() => setMenuOpen(true)} onSearch={onSearch} hasNotifications />
 
         <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-          <Outlet />
+          {/* Own Suspense so only this area shows a spinner while a page loads;
+              the sidebar and topbar stay on screen instead of flashing. */}
+          <Suspense fallback={<LoadingState />}>
+            <Outlet />
+          </Suspense>
         </main>
 
         <footer className="flex flex-col gap-1 border-t border-line px-4 py-5 text-xs text-body sm:flex-row sm:justify-between sm:px-6 lg:px-8">

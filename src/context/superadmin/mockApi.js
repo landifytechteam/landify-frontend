@@ -284,6 +284,15 @@ async function setAdminAccess(id, { access, reason }) {
   return copy(admin);
 }
 
+async function deleteUser(id) {
+  await wait();
+  const index = db.admins.findIndex((a) => a.id === id);
+  if (index === -1) fail("Target user account not found.", 404);
+  const [admin] = db.admins.splice(index, 1);
+  audit({ scope: companyOf(admin.companyId).name, action: "Account deleted", target: admin.name, targetSub: "Company administrator", stateChange: "Deleted permanently" });
+  return { success: true, message: "Account successfully deleted." };
+}
+
 // ---- Moderation -------------------------------------------------------------
 
 async function getModerationQueue({ tab = "pending", search, companyId, type, flag, sort = "newest", page, pageSize } = {}) {
@@ -449,7 +458,7 @@ async function updateSettings(changes) {
 export const mockApi = {
   getOverview, getBadgeCounts,
   getCompanies, getCompany, createCompany, updateCompany, setCompanyStatus,
-  getAdmins, getPlatformAdmins, inviteAdmin, resendInvite, setAdminAccess,
+  getAdmins, getPlatformAdmins, inviteAdmin, resendInvite, setAdminAccess, deleteUser,
   getModerationQueue, getSubmission, approveSubmission, rejectSubmission,
   getProperties, getAuditEvents, getSettings, updateSettings,
 };

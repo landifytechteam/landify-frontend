@@ -4,23 +4,23 @@ import { Modal } from "../dashboard/Modal";
 
 /** <img> that shows a grey placeholder if the file is missing. */
 function Photo({ src, alt, className }) {
-  const [broken, setBroken] = useState(false);
-  useEffect(() => setBroken(false), [src]);
-  if (broken || !src) {
+  // Remember WHICH image failed, so a new src automatically gets another try
+  const [failedSrc, setFailedSrc] = useState(null);
+  if (!src || failedSrc === src) {
     return (
       <div className={`flex items-center justify-center bg-canvas text-body ${className}`}>
         <ImageOff className="h-6 w-6" aria-label="Image unavailable" />
       </div>
     );
   }
-  return <img src={src} alt={alt} className={`object-cover ${className}`} onError={() => setBroken(true)} />;
+  return <img src={src} alt={alt} className={`object-cover ${className}`} onError={() => setFailedSrc(src)} />;
 }
 
 /**
  * Big photo + two thumbnails + "View all" tile. Clicking a thumbnail swaps the
  * big photo; "View all" (or the big photo) opens a full-size viewer with arrows.
  */
-export function ImageGallery({ images = [], title }) {
+export function ImageGallery({ images = [], title, caption = "Company-submitted imagery" }) {
   const [current, setCurrent] = useState(0);
   const [viewerOpen, setViewerOpen] = useState(false);
   const count = images.length;
@@ -49,7 +49,7 @@ export function ImageGallery({ images = [], title }) {
       <button type="button" onClick={() => setViewerOpen(true)} className="relative block w-full" aria-label="Open photo viewer">
         <Photo src={images[current]} alt={`${title} photo ${current + 1}`} className="h-64 w-full sm:h-80 lg:h-85" />
         <span className="absolute left-3 top-3 rounded-md bg-brand-900/90 px-2.5 py-1 text-xs font-medium text-white">
-          Company-submitted imagery · {current + 1} of {count}
+          {caption} · {current + 1} of {count}
         </span>
       </button>
       <div className="grid grid-cols-3 gap-3 p-3">

@@ -1,57 +1,80 @@
 import { useEffect, useState } from "react";
-import { Info, Mail, Phone, User } from "lucide-react";
-import { AuthLayout } from "../components/auth/AuthLayout";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Building2, Info, Mail, Phone, User } from "lucide-react";
+import { AuthLayout, AuthHeading, SecureNote } from "../components/auth/AuthLayout";
 import { SubmitButton } from "../components/auth/SubmitButton";
-import { TextField } from "../components/auth/TextField";
-import { FieldError } from "../components/auth/TextField";
-import { PasswordField } from "../components/auth/TextField";
-import { AuthHeading } from "../components/auth/AuthLayout";
-import { SecureNote } from "../components/auth/AuthLayout";
+import { FieldError, PasswordField, TextField } from "../components/auth/TextField";
 import { OrDivider } from "../components/auth/SocialAuth";
-import { GoogleButton } from "../components/auth/SocialAuth";
 import { AccountTypePicker } from "../components/auth/AccountTypePicker";
-import { accountTypes, authRoutes, continueWithGoogle, PASSWORD_HINT } from "../data/auth";
+import { GoogleSignInButton } from "../components/auth/GoogleSignInButton";
+import { accountTypes, authRoutes, getRole, homeForRole, PASSWORD_HINT } from "../data/auth";
 import { validateSignup } from "../utils/validation";
 import useAuth from "../context/useAuth";
-import { useNavigate, useSearchParams } from "react-router-dom";
+
+const COMPANY = "Company Admin";
+const GOOGLE_ENABLED = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+
+// Wording for the name / email fields, depending on who is signing up
+const LABELS = {
+  person: {
+    name: "Full Name",
+    namePlaceholder: "Enter your full name",
+    nameIcon: User,
+    nameError: "Enter your full name.",
+    email: "Email Address",
+    emailPlaceholder: "you@example.com",
+    phone: "Phone Number",
+  },
+  company: {
+    name: "Company Name",
+    namePlaceholder: "Enter your registered company name",
+    nameIcon: Building2,
+    nameError: "Enter your company name.",
+    email: "Company Email Address",
+    emailPlaceholder: "info@yourcompany.com",
+    phone: "Company Phone Number",
+  },
+};
 
 function initialRole(slug) {
-  return accountTypes.find((t) => t.slug === slug)?.value ?? "client";
+  return accountTypes.find((t) => t.slug === slug)?.value ?? "Client";
 }
 
 export default function SignupPage() {
-  const { loading, error, register, clearError } = useAuth();
+  const { loading, error, register, clearError, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const [form, setForm] = useState(() => ({
+    accountType: initialRole(searchParams.get("role")),
     fullName: "",
     email: "",
     phone: "",
     password: "",
     confirmPassword: "",
-    accountType: initialRole(searchParams.get("role")),
     agree: false,
   }));
   const [fieldErrors, setFieldErrors] = useState({});
+
+  const isCompany = form.accountType === COMPANY;
+  const labels = isCompany ? LABELS.company : LABELS.person;
 
   useEffect(() => {
     clearError();
   }, [clearError]);
 
   const clearFieldError = (name) => {
-    if (fieldErrors[name]) setFieldErrors((e) => ({ ...e, [name]: undefined}));
+    if (fieldErrors[name]) setFieldErrors((e) => ({ ...e, [name]: undefined }));
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((v) => ({ ...v, [name]: type === "checkbox" ? checked : value }));
-    // Clear a field's error as soon as the user edits it
-    clearFieldError(name);
+    clearFieldError(name); // clear a field's error as soon as the user edits it
   };
 
   const handleAccountType = (type) => {
-    setForm((v) => ({ ...v, accountType: type}));
+    setForm((v) => ({ ...v, accountType: type }));
     clearFieldError("accountType");
   };
 
@@ -59,33 +82,45 @@ export default function SignupPage() {
     e.preventDefault();
 
     const found = validateSignup(form);
+    if (found.fullName) found.fullName = labels.nameError; // "company name" wording for companies
     setFieldErrors(found);
     if (Object.keys(found).length) return;
 
+    // confirmPassword and agree are only for this form, so they're not sent.
+    // A company's name goes in `fullName`, the field the backend expects.
     // eslint-disable-next-line no-unused-vars
-    const { agree, ...payload } = form;
+    const { agree, confirmPassword, ...payload } = form;
 
-    const success = await register(payload);
-    if (!success) return;
+    const data = await register(payload);
+    if (!data) return; // `error` is shown above the button
 
-    navigate(authRoutes.otp, { state: { email: payload.email, purpose: "signup" } });
+    navigate(authRoutes.otp, {
+      state: { email: payload.email, purpose: "signup", debugOtp: data.debugOtp },
+    });
   }
 
   return (
     <AuthLayout badge="Secure sign up">
       <AuthHeading
         eyebrow="Welcome to Landify"
-        title="Create your account"
-        subtitle="A smarter property journey starts with a few details."
+        title={isCompany ? "Register your company" : "Create your account"}
+        subtitle={
+          isCompany
+            ? "Set up your company workspace to list properties and manage clients."
+            : "A smarter property journey starts with a few details."
+        }
       />
 
       <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
+        {/* Account type first, so the fields below match who is signing up */}
+        <AccountTypePicker value={form.accountType} onChange={handleAccountType} error={fieldErrors.accountType} />
+
         <TextField
           id="fullName"
-          label="Full Name"
-          icon={User}
-          placeholder="Enter your full name"
-          autoComplete="name"
+          label={labels.name}
+          icon={labels.nameIcon}
+          placeholder={labels.namePlaceholder}
+          autoComplete={isCompany ? "organization" : "name"}
           required
           error={fieldErrors.fullName}
           value={form.fullName}
@@ -94,9 +129,9 @@ export default function SignupPage() {
         <TextField
           id="email"
           type="email"
-          label="Email Address"
+          label={labels.email}
           icon={Mail}
-          placeholder="you@example.com"
+          placeholder={labels.emailPlaceholder}
           autoComplete="email"
           required
           error={fieldErrors.email}
@@ -106,7 +141,7 @@ export default function SignupPage() {
         <TextField
           id="phone"
           type="tel"
-          label="Phone Number"
+          label={labels.phone}
           icon={Phone}
           placeholder="+234 801 234 5678"
           autoComplete="tel"
@@ -117,7 +152,7 @@ export default function SignupPage() {
         />
 
         <div>
-          <div className="grid gap-4 sm:grid-cols-2 sm:gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <PasswordField
               id="password"
               label="Password"
@@ -125,8 +160,8 @@ export default function SignupPage() {
               autoComplete="new-password"
               required
               error={fieldErrors.password}
-          value={form.password}
-          onChange={handleChange}
+              value={form.password}
+              onChange={handleChange}
             />
             <PasswordField
               id="confirmPassword"
@@ -135,8 +170,8 @@ export default function SignupPage() {
               autoComplete="new-password"
               required
               error={fieldErrors.confirmPassword}
-          value={form.confirmPassword}
-          onChange={handleChange}
+              value={form.confirmPassword}
+              onChange={handleChange}
             />
           </div>
           <p className="mt-2 flex items-center gap-2 text-xs text-body">
@@ -144,12 +179,6 @@ export default function SignupPage() {
             {PASSWORD_HINT}
           </p>
         </div>
-
-        <AccountTypePicker
-          value={form.accountType}
-          onChange={handleAccountType}
-          error={fieldErrors.accountType}
-        />
 
         <div>
           <label className="flex cursor-pointer items-start gap-3 text-sm text-body">
@@ -164,13 +193,13 @@ export default function SignupPage() {
             />
             <span>
               I agree to the{" "}
-              <a href={authRoutes.terms} className="font-semibold text-brand-600 underline">
+              <Link to={authRoutes.terms} className="font-semibold text-brand-600 underline">
                 Terms &amp; Conditions
-              </a>{" "}
+              </Link>{" "}
               and{" "}
-              <a href={authRoutes.privacy} className="font-semibold text-brand-600 underline">
+              <Link to={authRoutes.privacy} className="font-semibold text-brand-600 underline">
                 Privacy Policy
-              </a>
+              </Link>
               .<span className="text-brand-600"> *</span>
             </span>
           </label>
@@ -183,19 +212,28 @@ export default function SignupPage() {
           </p>
         )}
 
-        <SubmitButton loading={loading}>Create Account</SubmitButton>
+        <SubmitButton loading={loading}>{isCompany ? "Register Company" : "Create Account"}</SubmitButton>
       </form>
 
-      <OrDivider />
-      <GoogleButton onClick={() => continueWithGoogle(form.accountType)}>
-        Sign up with Google
-      </GoogleButton>
+      {/* POST /auth/google gets the chosen account type, so Google works for every type */}
+      {GOOGLE_ENABLED && (
+        <>
+          <OrDivider />
+          <GoogleSignInButton
+            text="signup_with"
+            onToken={async (idToken) => {
+              const user = await loginWithGoogle(idToken, form.accountType);
+              if (user) navigate(homeForRole[getRole(user)] ?? "/", { replace: true });
+            }}
+          />
+        </>
+      )}
 
       <p className="mt-5 text-center text-sm text-body">
         Already have an account?{" "}
-        <a href={authRoutes.login} className="font-medium text-brand-600 hover:underline">
+        <Link to={authRoutes.login} className="font-medium text-brand-600 hover:underline">
           Log In
-        </a>
+        </Link>
       </p>
 
       <SecureNote />

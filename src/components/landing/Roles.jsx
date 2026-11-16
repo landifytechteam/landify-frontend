@@ -1,4 +1,5 @@
 import { ArrowUpRight, Building2, Handshake, House } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Eyebrow } from "../ui/Eyebrow";
 import { routes } from "../../data/landing";
 
@@ -78,13 +79,13 @@ export function Roles() {
                   </li>
                 ))}
               </ul>
-              <a
-                href={role.href}
+              <Link
+                to={role.href}
                 className="mt-6 flex items-center justify-between border-t border-line pt-6 text-sm font-semibold text-brand-600 hover:underline"
               >
                 {role.cta}
                 <ArrowUpRight className="h-4 w-4" aria-hidden />
-              </a>
+              </Link>
             </article>
           ))}
         </div>

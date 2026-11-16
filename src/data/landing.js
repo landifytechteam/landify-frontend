@@ -42,6 +42,10 @@ export const routes = {
   terms: "/terms",
 };
 
+// Property types used by the landing search AND the /properties filter.
+// TODO: confirm the exact spellings with the backend's propertyType values.
+export const PROPERTY_TYPES = ["Residential", "Commercial", "Mixed-use", "Agricultural"];
+
 export const navLinks = [
   { label: "Home", href: routes.home },
   { label: "Properties", href: routes.properties },
@@ -61,13 +65,8 @@ export const searchOptions = {
     { label: "Asokoro, Abuja", value: "asokoro-abuja" },
     { label: "Maitama, Abuja", value: "maitama-abuja" },
   ],
-  propertyTypes: [
-    { label: "Land", value: "land" },
-    { label: "Detached duplex", value: "detached-duplex" },
-    { label: "Semi-detached duplex", value: "semi-detached-duplex" },
-    { label: "Terrace", value: "terrace" },
-    { label: "Apartment", value: "apartment" },
-  ],
+  // Same names the /properties page filters by (sent to the API as ?propertyType=)
+  propertyTypes: PROPERTY_TYPES.map((t) => ({ label: t, value: t })),
   budgets: [
     { label: "Under ₦50m", value: "0-50000000" },
     { label: "₦50m – ₦100m", value: "50000000-100000000" },

@@ -5,9 +5,9 @@ import { CenteredAuthCard, FormAlert, InfoNote } from "../components/auth/Center
 import { OtpInput } from "../components/auth/OtpInput";
 import { SubmitButton } from "../components/auth/SubmitButton";
 import { OrDivider } from "../components/auth/SocialAuth";
-import { authRoutes, homeForRole, getRole } from "../data/auth";
-import useAuth from "../context/useAuth";
+import { authRoutes } from "../data/auth";
 import { maskEmail } from "../utils/apiError";
+import useAuth from "../context/useAuth";
 
 const CODE_LENGTH = 6;
 const RESEND_SECONDS = 60;
@@ -16,17 +16,27 @@ const emptyCode = () => Array(CODE_LENGTH).fill("");
 const formatTime = (s) =>
   `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
-
+/**
+ * One page for both flows. The page that sends the user here passes:
+ *   navigate(authRoutes.otp, { state: { email, purpose: "signup" | "reset", debugOtp? } })
+ *
+ * - signup: checks the code with POST /auth/verify-otp, then goes to login.
+ * - reset:  the backend checks reset codes together with the new password
+ *           (POST /auth/reset-password), so this page just collects the code
+ *           and passes it on to the Reset password page.
+ */
 export default function VerifyOtpPage() {
   const navigate = useNavigate();
-  const { verifyOtp, resendOtp, loading, error, clearError } = useAuth();
-  const { email, purpose = "signup" } = useLocation().state || {};
+  const { email, purpose = "signup", debugOtp: firstDebugOtp } = useLocation().state || {};
+  const { loading, error, clearError, verifyOtp, resendOtp } = useAuth();
 
   const [code, setCode] = useState(emptyCode);
   const [codeError, setCodeError] = useState("");
   const [notice, setNotice] = useState("");
   const [resending, setResending] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS);
+  // Test-mode code from the backend; replaced when "Resend Code" returns a new one
+  const [debugOtp, setDebugOtp] = useState(firstDebugOtp);
 
   // Count down one second at a time until the user may ask for a new code
   useEffect(() => {
@@ -35,6 +45,7 @@ export default function VerifyOtpPage() {
     return () => clearTimeout(timer);
   }, [secondsLeft]);
 
+  // Don't show an error left over from the previous page
   useEffect(() => {
     clearError();
   }, [clearError]);
@@ -47,7 +58,7 @@ export default function VerifyOtpPage() {
   const handleCodeChange = (next) => {
     setCode(next);
     setCodeError("");
-    if (error)  clearError();
+    if (error) clearError();
   };
 
   async function handleSubmit(e) {
@@ -59,25 +70,23 @@ export default function VerifyOtpPage() {
     }
 
     setNotice("");
-    const data = await verifyOtp({ email, code: joined, purpose });
+
+    if (purpose === "reset") {
+      navigate(authRoutes.resetPassword, { state: { email, token: joined } });
+      return;
+    }
+
+    const data = await verifyOtp({ email, code: joined });
     if (!data) {
+      // Wrong or expired code: the context has set `error`, so clear the boxes for a retry
       setCode(emptyCode());
       return;
     }
 
-    if (purpose === "reset") {
-      navigate(authRoutes.resetPassword, {
-        state: { email, resetToken: data.resetToken ?? joined },
-        replace: true,
-      });
-    } else if (data.accessToken) {
-      navigate(homeForRole[getRole(data.user)], { replace: true });
-    } else {
-      navigate(authRoutes.login, {
-        state: { notice: "Your email is verified. Log in to continue." },
-        replace: true,
-      });
-    }
+    navigate(authRoutes.login, {
+      state: { notice: "Your email is verified. Log in to continue." },
+      replace: true,
+    });
   }
 
   async function handleResend() {
@@ -86,6 +95,7 @@ export default function VerifyOtpPage() {
     const sent = await resendOtp({ email, purpose });
     setResending(false);
     if (!sent) return;
+    if (sent.debugOtp) setDebugOtp(sent.debugOtp);
 
     setCode(emptyCode());
     setSecondsLeft(RESEND_SECONDS);
@@ -134,9 +144,17 @@ export default function VerifyOtpPage() {
           <InfoNote icon={Info}>You can paste the code directly into the boxes.</InfoNote>
         )}
 
+        {/* The backend sends `debugOtp` while email delivery is in test mode.
+            import.meta.env.DEV is true only under `npm run dev`, so it never shows on the live site. */}
+        {import.meta.env.DEV && debugOtp && purpose === "signup" && (
+          <p className="rounded-md border border-dashed border-gold-500 bg-[#fbf6e6] px-3 py-2 text-center text-sm text-ink">
+            Test mode code: <span className="font-semibold tracking-[0.3em]">{debugOtp}</span>
+          </p>
+        )}
+
         <FormAlert>{error}</FormAlert>
 
-        <SubmitButton loading={loading}>Verify Code</SubmitButton>
+        <SubmitButton loading={loading}>{purpose === "reset" ? "Continue" : "Verify Code"}</SubmitButton>
       </form>
 
       <OrDivider />

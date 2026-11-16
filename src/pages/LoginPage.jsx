@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Mail, CheckCircle2 } from "lucide-react";
 import { AuthLayout } from "../components/auth/AuthLayout";
 import { SubmitButton } from "../components/auth/SubmitButton";
@@ -8,12 +8,13 @@ import { PasswordField } from "../components/auth/TextField";
 import { AuthHeading } from "../components/auth/AuthLayout";
 import { SecureNote } from "../components/auth/AuthLayout";
 import { OrDivider } from "../components/auth/SocialAuth";
-import { GoogleButton } from "../components/auth/SocialAuth";
-import { authRoutes, continueWithGoogle, homeForRole, getRole } from "../data/auth";
+import { GoogleSignInButton } from "../components/auth/GoogleSignInButton";
+import { authRoutes, homeForRole, getRole } from "../data/auth";
 import { validateLogin } from "../utils/validation";
 import useAuth from "../context/useAuth";
 
 const REMEMBERED_EMAIL_KEY = "rememberedEmail";
+const GOOGLE_ENABLED = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
 
 const getRememberedEmail = () => {
   try {
@@ -33,9 +34,10 @@ const saveRememberedEmail = (email) => {
 };
 
 export default function LoginPage() {
-  const { loading, error, login, clearError } = useAuth();
+  const { loading, error, login, clearError, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
-  const notice = useLocation().state?.notice;
+  const location = useLocation();
+  const notice = location.state?.notice;
 
   const [rememberedEmail] = useState(() => getRememberedEmail());
   const [form, setForm] = useState({ email: rememberedEmail, password: "" });
@@ -45,6 +47,14 @@ export default function LoginPage() {
   useEffect(() => {
     clearError();
   }, [clearError]);
+
+  // ProtectedRoute sends people here with state.from (a string, or a location object).
+  // Go back there after login, otherwise to the dashboard for the user's role.
+  const goAfterLogin = (user) => {
+    const from = location.state?.from;
+    const target = (typeof from === "string" ? from : from?.pathname) || homeForRole[getRole(user)] || "/";
+    navigate(target, { replace: true });
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -65,9 +75,7 @@ export default function LoginPage() {
     const user = await login(form);
     if (!user) return;
     saveRememberedEmail(rememberMe ? form.email : null);
-    navigate(location.state?.from ?? homeForRole[getRole(user)] ?? "/", {
-      replace: true,
-    });
+    goAfterLogin(user);
   };
 
   return (
@@ -119,12 +127,12 @@ export default function LoginPage() {
             />
             Remember me
           </label>
-          <a
-            href={authRoutes.forgotPassword}
+          <Link
+            to={authRoutes.forgotPassword}
             className="text-sm font-semibold text-brand-600 hover:underline"
           >
             Forgot password?
-          </a>
+          </Link>
         </div>
 
         {error && (
@@ -139,19 +147,26 @@ export default function LoginPage() {
         <SubmitButton loading={loading}>Log In</SubmitButton>
       </form>
 
-      <OrDivider />
-      <GoogleButton onClick={() => continueWithGoogle()}>
-        Continue with Google
-      </GoogleButton>
+      {GOOGLE_ENABLED && (
+        <>
+          <OrDivider />
+          <GoogleSignInButton
+            onToken={async (idToken) => {
+              const user = await loginWithGoogle(idToken);
+              if (user) goAfterLogin(user);
+            }}
+          />
+        </>
+      )}
 
       <p className="mt-5 text-center text-sm text-body">
         Don&apos;t have an account?{" "}
-        <a
-          href={authRoutes.signup}
+        <Link
+          to={authRoutes.signup}
           className="font-medium text-brand-600 hover:underline"
         >
           Create one
-        </a>
+        </Link>
       </p>
 
       <SecureNote />

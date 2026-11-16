@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowUpRight, Building2, ChevronDown, MapPin, Wallet } from "lucide-react";
 import { routes, searchOptions } from "../../data/landing";
 
@@ -35,16 +36,20 @@ export function SearchBar() {
   const [type, setType] = useState("");
   const [budget, setBudget] = useState("");
 
+  const navigate = useNavigate();
+
   function handleSubmit(e) {
     e.preventDefault();
-    // TODO: agree the query param names with the backend's listing endpoint.
+    // Use the same query names the /properties page reads (?city=&propertyType=).
+    // "Lekki, Lagos" -> city "Lekki", since the backend filters by city.
     const params = new URLSearchParams();
-    if (location) params.set("location", location);
-    if (type) params.set("type", type);
+    const city = searchOptions.locations.find((o) => o.value === location)?.label.split(",")[0];
+    if (city) params.set("city", city);
+    if (type) params.set("propertyType", type);
+    // TODO: the public API has no price filter yet, so the page ignores this for now.
     if (budget) params.set("budget", budget);
     const qs = params.toString();
-    // Using React Router? Swap this for navigate() from useNavigate().
-    window.location.assign(qs ? `${routes.properties}?${qs}` : routes.properties);
+    navigate(qs ? `${routes.properties}?${qs}` : routes.properties);
   }
 
   return (

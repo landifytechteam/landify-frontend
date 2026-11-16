@@ -10,7 +10,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
     if (initializing) return <p className="p-8 text-center text-body">Loading...</p>
 
     if (!isAuthenticated) {
-        return <Navigate to={authRoutes.login} replace state={{ from: location.pathname }} />;
+        return <Navigate to={authRoutes.login} replace state={{ from: location.pathname + location.search }} />;
     }
 
     if (allowedRoles && !allowedRoles.includes(getRole(user))) {

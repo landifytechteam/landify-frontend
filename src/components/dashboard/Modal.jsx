@@ -15,7 +15,11 @@ export function Modal({
 }) {
   const panelRef = useRef(null);
   const closeRef = useRef(onClose);
-  closeRef.current = onClose; // always call the latest onClose without re-running the effect
+  // Always call the latest onClose without re-running the effect below.
+  // (Updated in an effect: writing a ref during render is not allowed.)
+  useEffect(() => {
+    closeRef.current = onClose;
+  });
 
   useEffect(() => {
     if (!open) return;

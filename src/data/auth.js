@@ -1,14 +1,12 @@
 // ---------------------------------------------------------------------------
-// Sign up / log in placeholders. Everything you need to swap later lives here.
+// Sign up / log in settings. The API calls themselves live in context/AuthContext.jsx.
 // ---------------------------------------------------------------------------
 
 export const authRoutes = {
   home: "/",
   login: "/login",
   signup: "/signup",
-  forgotPassword: "/forgot-password", // TODO: build this page
-  afterSignup: "/verify-email", // TODO: confirm where new users land
-  afterLogin: "/dashboard", // TODO: confirm per role (client, partner, company admin)
+  forgotPassword: "/forgot-password",
   otp: "/verify-otp",
   resetPassword: "/reset-password",
   // TODO: replace with the real legal pages once written
@@ -43,30 +41,7 @@ export const accountTypes = [
 export const PASSWORD_HINT =
   "Use 8+ characters with uppercase, lowercase and a number.";
 
-// ---------------------------------------------------------------------------
-// API calls. TODO: wire these to the backend once the endpoints exist.
-// Each should resolve on success and throw an Error with a readable message.
-// ---------------------------------------------------------------------------
-
-// eslint-disable-next-line no-unused-vars
-export async function signUp(payload) {
-  // TODO: POST /auth/signup with { fullName, email, phone, password, accountType }
-  await new Promise((r) => setTimeout(r, 800));
-}
-
-// eslint-disable-next-line no-unused-vars
-export async function logIn(payload) {
-  // TODO: POST /auth/login with { email, password, remember }, then store the session
-  await new Promise((r) => setTimeout(r, 800));
-}
-
-// eslint-disable-next-line no-unused-vars
-export function continueWithGoogle(accountType) {
-  // TODO: redirect to the backend's Google OAuth URL, e.g.
-  // window.location.href = `${API_URL}/auth/google?role=${accountType ?? ""}`;
-  alert("Google sign in isn't connected yet.");
-}
-
+// Where each role lands after login. Keys are what getRole(user) returns.
 export const homeForRole = {
   "Client": "/clients",
   "Sales Partner": "/salespartner",
@@ -74,4 +49,5 @@ export const homeForRole = {
   superadmin: "/superadmin",
 };
 
+// Super admin is a flag, not an accountType, so check it first.
 export const getRole = (user) => (user?.isSuperAdmin ? "superadmin" : user?.accountType);

@@ -1,140 +1,149 @@
-import { createContext, useCallback, useEffect, useState, useRef } from "react";
-import api, { setAccessToken } from "../api/axios";
+import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api, { refreshAccessToken, setAccessToken, setOnSessionExpired } from "../api/axios";
+import { userFromToken } from "../utils/jwt";
+import { getErrorMessage } from "../utils/apiError";
 
 const AuthContext = createContext(null);
 
-const getErrorMessage = (err, fallback) => {
-  const message = err.response?.data?.message;
-  if (Array.isArray(message)) return message.join(" ");
-  return message || fallback;
+// Backup copy of the user for this browser tab, in case the token doesn't
+// carry every field. (Only profile info, never the token.)
+const USER_KEY = "landify:user";
+const rememberUser = (user) => {
+  try {
+    if (user) sessionStorage.setItem(USER_KEY, JSON.stringify(user));
+    else sessionStorage.removeItem(USER_KEY);
+  } catch {
+    // storage blocked (private mode): fine, the token is enough
+  }
+};
+const rememberedUser = () => {
+  try {
+    return JSON.parse(sessionStorage.getItem(USER_KEY)) ?? null;
+  } catch {
+    return null;
+  }
 };
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
   const [initializing, setInitializing] = useState(true);
-  const didRestore = useRef(false);
+  const navigate = useNavigate();
+  const restored = useRef(false);
 
-  useEffect(() => {
-    if (didRestore.current) return;
-    didRestore.current = true;
-    
-    const restoreSession = async () => {
-      try {
-        const refreshRes = await api.post("/auth/refresh-token", {});
-        setAccessToken(refreshRes.data.accessToken);
-        setUser(refreshRes.data.user);
-      } catch {
-        // no valid session, so the user just stays logged out
-      } finally {
-        setInitializing(false);
-      }
-    };
-    restoreSession();
+  // Save the token + user after login / Google / anything that signs in
+  const startSession = useCallback((accessToken, userData) => {
+    setAccessToken(accessToken);
+    const next = userData ?? userFromToken(accessToken);
+    setUser(next);
+    rememberUser(next);
   }, []);
+
+  const endSession = useCallback(() => {
+    setAccessToken(null);
+    setUser(null);
+    rememberUser(null);
+  }, []);
+
+  // On page load: swap the refresh cookie for a new access token.
+  // The endpoint returns only { accessToken }, so the user comes from the token.
+  useEffect(() => {
+    if (restored.current) return; // React StrictMode runs effects twice in dev
+    restored.current = true;
+
+    refreshAccessToken()
+      .then((token) => {
+        const fromToken = userFromToken(token);
+        const next = fromToken?.accountType ? fromToken : { ...rememberedUser(), ...fromToken };
+        setUser(next);
+        rememberUser(next);
+      })
+      .catch(() => endSession()) // no valid session: stay logged out
+      .finally(() => setInitializing(false));
+  }, [endSession]);
+
+  // If a refresh fails later (cookie expired), drop the user and go to login
+  useEffect(() => {
+    setOnSessionExpired(() => {
+      endSession();
+      navigate("/login", { replace: true, state: { notice: "Your session expired. Please log in again." } });
+    });
+  }, [endSession, navigate]);
 
   const clearError = useCallback(() => setError(null), []);
 
-  const login = async (credentials) => {
-    setLoading(true);
+  // Runs an API call with loading + error handling. Returns the response data, or null.
+  const request = async (call, fallbackMessage, { quiet = false } = {}) => {
+    if (!quiet) setLoading(true);
     setError(null);
     try {
-      const response = await api.post("/auth/login", credentials);
-      setAccessToken(response.data.accessToken);
-      setUser(response.data.user);
-
-      return response.data.user;
+      const res = await call();
+      return res.data ?? {};
     } catch (err) {
-      setError(getErrorMessage(err, "Login failed"));
-
-      return false;
+      setError(getErrorMessage(err, fallbackMessage));
+      return null;
     } finally {
-      setLoading(false);
+      if (!quiet) setLoading(false);
     }
+  };
+
+  const login = async (credentials) => {
+    const data = await request(() => api.post("/auth/login", credentials), "Login failed. Check your email and password.");
+    if (!data) return null;
+    startSession(data.accessToken, data.user);
+    return data.user; // the page uses this to pick the dashboard
+  };
+
+  // Google sign-in: `idToken` comes from the Google button (see GoogleSignInButton.jsx).
+  // `accountType` is sent only from the signup page, so a NEW account gets the type the
+  // user picked. Login leaves it out (existing accounts keep their type).
+  const loginWithGoogle = async (idToken, accountType) => {
+    const body = accountType ? { idToken, accountType } : { idToken };
+    const data = await request(() => api.post("/auth/google", body), "Google sign-in failed. Try again.");
+    if (!data?.accessToken) {
+      if (data) setError("Google sign-in didn't return a session. Ask the backend dev to return accessToken + user like /auth/login.");
+      return null;
+    }
+    startSession(data.accessToken, data.user);
+    return data.user ?? userFromToken(data.accessToken);
   };
 
   const logout = async () => {
     try {
       await api.post("/auth/logout");
     } catch {
-      //
+      // even if this fails, log out on this device
     } finally {
-      setAccessToken(null);
-      setUser(null);
+      endSession();
       navigate("/login");
     }
   };
 
-  const register = async (credentials) => {
-    setLoading(true);
-    setError(null);
-    try {
-      await api.post("/auth/register", credentials);
+  // Body: { fullName, email, phone, password, accountType: "Client" | "Sales Partner" | "Company Admin", country, state }
+  // Returns the response data ({ userId, debugOtp, ... }) or null.
+  const register = (payload) =>
+    request(() => api.post("/auth/register", { country: "Nigeria", ...payload }), "Registration failed. Please try again.");
 
-      return true;
-    } catch (err) {
-      setError(getErrorMessage(err, "Registration failed"));
+  // Sign-up codes only. Reset codes are checked by /auth/reset-password instead.
+  const verifyOtp = ({ email, code }) =>
+    request(() => api.post("/auth/verify-otp", { email, otp: code }), "That code didn't work. Check it and try again.");
 
-      return false;
-    } finally {
-      setLoading(false);
-    }
+  // `purpose` "reset" sends a new reset code instead of a new sign-up code.
+  // Doesn't touch `loading`, so the main button doesn't spin while resending.
+  // Returns the response data (may include a new `debugOtp` in test mode), or null.
+  const resendOtp = ({ email, purpose = "signup" }) => {
+    const path = purpose === "reset" ? "/auth/forgot-password" : "/auth/resend-otp";
+    return request(() => api.post(path, { email }), "We couldn't send a new code. Wait a minute and try again.", { quiet: true });
   };
 
-  const verifyOtp = async ({ email, code, }) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await api.post("/auth/verify-otp", { email, otp:code });
-      const data = response.data ?? {};
+  const requestPasswordReset = async ({ email }) =>
+    Boolean(await request(() => api.post("/auth/forgot-password", { email }), "We couldn't send the reset code. Try again shortly."));
 
-      if (data.accessToken) {
-        setAccessToken(data.accessToken);
-        setUser(data.user);
-      }
-      return data;
-    } catch (err) {
-      setError(getErrorMessage(err, "The code didn't work. Check it and try again."));
-
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }
-  
-  const resendOtp = async ({ email }) => {
-    setError(null);
-    try {
-      await api.post("/auth/resend-otp", { email });
-
-      return true;
-    } catch (err) {
-      setError(getErrorMessage(err, "We couldn't send a new code. Try again shortly."));
-
-      return false;
-    } 
-  };
-
-  const requestPasswordReset = async ({ email }) => {
-    setLoading(true);
-    setError(null);
-    try {
-      await api.post("/auth/forgot-password", { email });
-
-      return true;
-    } catch (err) {
-      setError(getErrorMessage(err, "We couldn't send a password reset email. Try again shortly."));
-
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const isAuthenticated = !!user;
+  // `token` is the 6-digit code from the reset email
+  const resetPassword = async ({ email, token, newPassword }) =>
+    Boolean(await request(() => api.post("/auth/reset-password", { email, token, newPassword }), "We couldn't reset your password. The code may have expired."));
 
   return (
     <AuthContext.Provider
@@ -143,14 +152,17 @@ export const AuthProvider = ({ children }) => {
         loading,
         error,
         clearError,
+        initializing,
+        isAuthenticated: Boolean(user),
         login,
+        loginWithGoogle,
         logout,
         register,
         verifyOtp,
         resendOtp,
         requestPasswordReset,
-        initializing,
-        isAuthenticated,
+        resetPassword,
+        endSession,
       }}
     >
       {children}

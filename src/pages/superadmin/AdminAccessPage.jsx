@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ArrowRight, Download, PauseCircle, PlayCircle, Send, UserX } from "lucide-react";
+import { ArrowRight, Download, PauseCircle, PlayCircle, Send, Trash2, UserX } from "lucide-react";
 import { superAdminApi } from "../../context/superadmin/superAdminApi";
 import { useAction, useListState, useRequest } from "../../context/superadmin/hooks";
 import { Button, ErrorState, FormError, PageHeader, Panel, Pill, StatCard, StatGrid, StatusBadge } from "../../components/dashboard/ui";
@@ -37,8 +37,8 @@ export default function AdminAccessPage() {
       if (match) setSelected(match);
     });
   }, [wantedId]);
-
-  const showAdmin = selected ?? (wantedId ? null : data?.items[0] ?? null);
+  // Until a row is clicked, show the first row (unless the URL asked for a specific account)
+  const shownAdmin = selected ?? (wantedId ? null : data?.items[0] ?? null);
 
   const s = data?.summary;
   const group = list.filters.group;
@@ -122,7 +122,7 @@ export default function AdminAccessPage() {
             <Select value={list.filters.companyId} onChange={(v) => list.setFilter("companyId", v)} options={data?.companies ?? []} placeholder="All companies" className="lg:w-48" />
             <Select value={list.filters.access} onChange={(v) => list.setFilter("access", v)} options={ACCESS_OPTIONS} placeholder="All access states" className="lg:w-44" />
           </FilterBar>
-          <DataTable columns={columns} rows={data?.items} loading={loading} onRowClick={setSelected} selectedKey={showAdmin?.id} empty="No administrators match these filters." />
+          <DataTable columns={columns} rows={data?.items} loading={loading} onRowClick={setSelected} selectedKey={shownAdmin?.id} empty="No administrators match these filters." />
           <Pagination page={list.page} pageSize={list.pageSize} total={data?.total ?? 0} onChange={list.setPage} noun="company administrator accounts" />
         </Panel>
       )}
@@ -130,11 +130,15 @@ export default function AdminAccessPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <InviteForm companies={data?.companies ?? []} onInvited={reload} />
         <ManageAccount
-        key={showAdmin?.id ?? "none"}
-          admin={showAdmin}
+          key={shownAdmin?.id ?? "none"} // a different account gets a fresh form (empty reason, no errors)
+          admin={shownAdmin}
           onResend={resendInvite}
           onChanged={(updated) => {
-            setSelected({ ...showAdmin, ...updated });
+            setSelected({ ...shownAdmin, ...updated });
+            reload();
+          }}
+          onDeleted={() => {
+            setSelected(null);
             reload();
           }}
         />
@@ -203,7 +207,7 @@ function InviteForm({ companies, onInvited }) {
 }
 
 /** Suspend / restore / revoke one account. Every change needs a reason for the audit log. */
-function ManageAccount({ admin, onChanged, onResend }) {
+function ManageAccount({ admin, onChanged, onResend, onDeleted }) {
   const toast = useToast();
   const change = useAction(superAdminApi.setAdminAccess);
   const [reason, setReason] = useState("");
@@ -286,6 +290,40 @@ function ManageAccount({ admin, onChanged, onResend }) {
           )}
         </div>
       )}
+      <DeleteAccount admin={admin} onDeleted={onDeleted} />
     </Panel>
+  );
+}
+
+/** Permanently delete the account (DELETE /auth/admin/users/:id). Asks for confirmation first. */
+function DeleteAccount({ admin, onDeleted }) {
+  const toast = useToast();
+  const remove = useAction(superAdminApi.deleteUser);
+  const [confirming, setConfirming] = useState(false);
+
+  const handleDelete = async () => {
+    if (await remove.run(admin.id)) {
+      toast(`${admin.name}'s account was deleted`);
+      onDeleted();
+    }
+  };
+
+  return (
+    <div className="mt-6 border-t border-line pt-5">
+      {!confirming ? (
+        <button type="button" onClick={() => setConfirming(true)} className="inline-flex items-center gap-2 text-sm font-semibold text-red-700 hover:underline">
+          <Trash2 className="h-4 w-4" /> Delete this account permanently
+        </button>
+      ) : (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+          <p className="text-sm font-semibold text-red-700">Delete {admin.name}'s account? Their sign-in is removed for good. This can't be undone.</p>
+          <div className="mt-3"><FormError>{remove.error}</FormError></div>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <Button variant="danger" icon={Trash2} loading={remove.busy} onClick={handleDelete}>Yes, delete account</Button>
+            <Button onClick={() => { setConfirming(false); remove.clearError(); }}>Cancel</Button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

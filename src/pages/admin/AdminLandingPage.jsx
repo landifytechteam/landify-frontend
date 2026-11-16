@@ -1,7 +1,7 @@
 
 const AdminLandingPage = () => {
     return (
-        <div>The Admin page us ready</div>
+        <div>The Admin page is ready</div>
     )
 };
 

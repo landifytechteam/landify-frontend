@@ -8,31 +8,24 @@ import { Roles } from "../components/landing/Roles";
 import { SearchBar } from "../components/landing/SearchBar";
 import { WhyChooseUs } from "../components/landing/WhyChooseUs";
 import { featuredProperties } from "../data/landing";
+import { useFeaturedProperties } from "../context/public/useFeaturedProperties";
 
 export default function LandingPage() {
-  // TODO: swap for the API once it exists, e.g.
-  // const [properties, setProperties] = useState([]);
-  // useEffect(() => {
-  //   fetch(`${import.meta.env.VITE_API_URL}/properties?featured=true`)
-  //     .then((r) => r.json())
-  //     .then(setProperties);
-  // }, []);
-  const properties = featuredProperties;
+  // Live listings from the API, or the demo ones while loading / if none exist
+  const properties = useFeaturedProperties(featuredProperties);
 
   return (
+    // MainLayout already renders the Navbar, Footer and <main>
     <>
-      {/* <Navbar /> */}
-      <main>
-        <Hero />
-        <SearchBar />
-        <FeaturedProperties properties={properties} />
-        <About />
-        <WhyChooseUs />
-        <HowItWorks />
-        <PaymentPlans />
-        <Roles />
-        <CallToAction />
-      </main>
+      <Hero />
+      <SearchBar />
+      <FeaturedProperties properties={properties} />
+      <About />
+      <WhyChooseUs />
+      <HowItWorks />
+      <PaymentPlans />
+      <Roles />
+      <CallToAction />
     </>
   );
 }

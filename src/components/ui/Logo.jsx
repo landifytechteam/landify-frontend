@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 /**
  * TODO: replace the inline SVG with the designer's logo file
  * (e.g. <img src="/logo.svg" alt="Landify" />). This is a close approximation.
@@ -7,8 +9,8 @@
 export function Logo({ tone = "default", className = "" }) {
   const light = tone === "light";
   return (
-    <a
-      href="/"
+    <Link
+      to="/"
       className={`flex items-center gap-2 ${light ? "text-white" : "text-brand-600"} ${className}`}
     >
       <svg
@@ -22,6 +24,6 @@ export function Logo({ tone = "default", className = "" }) {
         <path d="M15 24h6v4h-6z" fill={light ? "#073d2b" : "white"} />
       </svg>
       <span className="text-[28px] font-medium tracking-tight">Landify</span>
-    </a>
+    </Link>
   );
 }

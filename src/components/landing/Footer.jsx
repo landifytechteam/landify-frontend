@@ -1,5 +1,7 @@
 import { MapPin } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Logo } from "../ui/Logo";
+import { AppLink } from "../ui/AppLink";
 import { contact, footerColumns, routes } from "../../data/landing";
 
 export function Footer() {
@@ -25,9 +27,9 @@ export function Footer() {
               <ul className="mt-5 space-y-3">
                 {col.links.map((l) => (
                   <li key={l.label}>
-                    <a href={l.href} className="text-sm text-body hover:text-ink">
+                    <AppLink href={l.href} className="text-sm text-body hover:text-ink">
                       {l.label}
-                    </a>
+                    </AppLink>
                   </li>
                 ))}
               </ul>
@@ -56,12 +58,12 @@ export function Footer() {
         <div className="mt-16 flex flex-col justify-between gap-4 border-t border-line py-7 text-xs text-body sm:flex-row">
           <p>© {new Date().getFullYear()} Landify. All rights reserved.</p>
           <div className="flex gap-7">
-            <a href={routes.privacy} className="hover:text-ink">
+            <Link to={routes.privacy} className="hover:text-ink">
               Privacy Policy
-            </a>
-            <a href={routes.terms} className="hover:text-ink">
+            </Link>
+            <Link to={routes.terms} className="hover:text-ink">
               Terms of Use
-            </a>
+            </Link>
           </div>
         </div>
       </div>

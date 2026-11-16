@@ -56,12 +56,9 @@ export default function AuditActivityPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  // Show the newest event in the detail panel until one is clicked
-  useEffect(() => {
-    if (data?.items.length && !data.items.some((e) => e.id === selected?.id))
-      setSelected(data.items[0]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
+  // Show the clicked event, or the newest one if nothing on this page is clicked.
+  // Worked out during render, so no effect + extra render is needed.
+  const shown = data?.items.find((e) => e.id === selected?.id) ?? data?.items[0] ?? null;
 
   const select = (event) => {
     setSelected(event);
@@ -216,7 +213,7 @@ export default function AuditActivityPage() {
             loading={loading}
             minWidth={900}
             onRowClick={select}
-            selectedKey={selected?.id}
+            selectedKey={shown?.id}
             empty="No events match these filters. Try a longer time range."
           />
           <Pagination
@@ -230,7 +227,7 @@ export default function AuditActivityPage() {
       )}
 
       <div ref={detailRef} className="scroll-mt-24">
-        {selected && <EventDetail event={selected} />}
+        {shown && <EventDetail event={shown} />}
       </div>
     </div>
   );

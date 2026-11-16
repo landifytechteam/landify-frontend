@@ -36,9 +36,9 @@ export function CenteredAuthCard({ icon: Icon, accent = "dot", title, subtitle, 
       <footer className="mt-12 flex w-full max-w-200 flex-col items-center justify-between gap-3 text-xs text-body sm:flex-row">
         <p>© {new Date().getFullYear()} Landify. All rights reserved.</p>
         <nav className="flex gap-6">
-          <a href={authRoutes.privacy} className="hover:text-brand-600">
+          <Link to={authRoutes.privacy} className="hover:text-brand-600">
             Privacy Policy
-          </a>
+          </Link>
           <a href={authRoutes.support} className="hover:text-brand-600">
             Need help?
           </a>
