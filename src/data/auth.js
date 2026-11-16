@@ -71,5 +71,7 @@ export const homeForRole = {
   "Client": "/clients",
   "Sales Partner": "/salespartner",
   "Company Admin": "/admin",
-  "Super Admin": "/superadmin",
+  superadmin: "/superadmin",
 };
+
+export const getRole = (user) => (user?.isSuperAdmin ? "superadmin" : user?.accountType);

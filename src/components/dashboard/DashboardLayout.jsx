@@ -4,15 +4,9 @@ import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { navForRole } from "../../data/navigation";
 import useAuth from "../../context/useAuth";
+import { ToastProvider } from "./Toast";
 
-/**
- * The frame around every dashboard page: sidebar on the left, header on top,
- * and the current page (React Router's <Outlet />) in the middle.
- *
- * `role` picks the menu from navForRole. `badges` holds live counts for menu
- * items, e.g. { moderation: 8 }. TODO: load these from the backend.
- */
-export function DashboardLayout({ role, badges, footerLabel }) {
+export function DashboardLayout({ role, badges, footerLabel, onSearch }) {
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const nav = navForRole[role] ?? navForRole[user?.role];
@@ -20,6 +14,7 @@ export function DashboardLayout({ role, badges, footerLabel }) {
   if (!nav) return <p className="p-8 text-body">No dashboard is set up for this role yet.</p>;
 
   return (
+    <ToastProvider>
     <div className="min-h-screen bg-canvas">
       <Sidebar
         nav={nav}
@@ -31,7 +26,7 @@ export function DashboardLayout({ role, badges, footerLabel }) {
       />
 
       <div className="flex min-h-screen flex-col lg:pl-66">
-        <Topbar nav={nav} onMenuClick={() => setMenuOpen(true)} hasNotifications />
+        <Topbar nav={nav} onMenuClick={() => setMenuOpen(true)} onSearch={onSearch} hasNotifications />
 
         <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
           <Outlet />
@@ -42,5 +37,6 @@ export function DashboardLayout({ role, badges, footerLabel }) {
         </footer>
       </div>
     </div>
+    </ToastProvider>
   );
 }

@@ -3,11 +3,6 @@ import { NavLink } from "react-router-dom";
 import { ChevronDown, LogOut, ShieldCheck, X } from "lucide-react";
 import { Logo } from "../ui/Logo";
 
-/**
- * Dark green sidebar. Everything role-specific comes from `nav`
- * (one entry of navForRole), so the same component serves every role.
- * On small screens it slides in as a drawer; `open` / `onClose` control that.
- */
 export function Sidebar({ nav, badges = {}, user, onLogout, open, onClose }) {
   const WorkspaceIcon = nav.workspace.icon;
 
@@ -126,7 +121,7 @@ function UserMenu({ user, title, onLogout }) {
           <button
             type="button"
             onClick={onLogout}
-            className="flex w-full items-center gap-2 px-4 py-2.5 hover:bg-canvas"
+            className="flex w-full items-center gap-2 px-4 py-2.5 hover:bg-canvas hover:cursor-pointer"
           >
             <LogOut className="h-4 w-4 text-body" aria-hidden />
             Log out

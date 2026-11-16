@@ -5,7 +5,7 @@ import { CenteredAuthCard, FormAlert, InfoNote } from "../components/auth/Center
 import { OtpInput } from "../components/auth/OtpInput";
 import { SubmitButton } from "../components/auth/SubmitButton";
 import { OrDivider } from "../components/auth/SocialAuth";
-import { authRoutes } from "../data/auth";
+import { authRoutes, homeForRole, getRole } from "../data/auth";
 import useAuth from "../context/useAuth";
 import { maskEmail } from "../utils/apiError";
 
@@ -71,7 +71,7 @@ export default function VerifyOtpPage() {
         replace: true,
       });
     } else if (data.accessToken) {
-      navigate(data.user.role, { replace: true });
+      navigate(homeForRole[getRole(data.user)], { replace: true });
     } else {
       navigate(authRoutes.login, {
         state: { notice: "Your email is verified. Log in to continue." },

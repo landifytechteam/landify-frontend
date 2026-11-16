@@ -9,7 +9,7 @@ import { AuthHeading } from "../components/auth/AuthLayout";
 import { SecureNote } from "../components/auth/AuthLayout";
 import { OrDivider } from "../components/auth/SocialAuth";
 import { GoogleButton } from "../components/auth/SocialAuth";
-import { authRoutes, continueWithGoogle, homeForRole } from "../data/auth";
+import { authRoutes, continueWithGoogle, homeForRole, getRole } from "../data/auth";
 import { validateLogin } from "../utils/validation";
 import useAuth from "../context/useAuth";
 
@@ -38,7 +38,7 @@ export default function LoginPage() {
   const notice = useLocation().state?.notice;
 
   const [rememberedEmail] = useState(() => getRememberedEmail());
-  const [form, setForm] = useState({ identifier: rememberedEmail, password: "" });
+  const [form, setForm] = useState({ email: rememberedEmail, password: "" });
   const [fieldErrors, setFieldErrors] = useState({});
   const [rememberMe, setRememberMe] = useState(!!rememberedEmail);
 
@@ -62,11 +62,12 @@ export default function LoginPage() {
     setFieldErrors(found);
     if (Object.keys(found).length) return;
 
-    const success = await login(form);
-    if (!success) return; // AuthContext has set `error`, shown below
-
+    const user = await login(form);
+    if (!user) return;
     saveRememberedEmail(rememberMe ? form.email : null);
-    navigate(homeForRole[success.role] ?? "/");
+    navigate(location.state?.from ?? homeForRole[getRole(user)] ?? "/", {
+      replace: true,
+    });
   };
 
   return (

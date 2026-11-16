@@ -9,10 +9,7 @@ const todayInLagos = () =>
     timeZone: "Africa/Lagos",
   }).format(new Date())} · WAT`;
 
-/**
- * Header bar above every dashboard page: search, scope pill, date,
- * notifications and the role label. `onMenuClick` opens the sidebar on mobile.
- */
+
 export function Topbar({ nav, onMenuClick, onSearch, hasNotifications }) {
   const handleSubmit = (e) => {
     e.preventDefault();
