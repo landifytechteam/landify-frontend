@@ -86,10 +86,11 @@ export default function SignupPage() {
     setFieldErrors(found);
     if (Object.keys(found).length) return;
 
-    // confirmPassword and agree are only for this form, so they're not sent.
+    // The backend requires confirmPassword too (it answers "expected string,
+    // received undefined" without it). `agree` is only for this form, so it's not sent.
     // A company's name goes in `fullName`, the field the backend expects.
     // eslint-disable-next-line no-unused-vars
-    const { agree, confirmPassword, ...payload } = form;
+    const { agree, ...payload } = form;
 
     const data = await register(payload);
     if (!data) return; // `error` is shown above the button

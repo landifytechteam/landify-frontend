@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
-import { LoadingState } from "./components/dashboard/ui";
+import { PageLoader } from "./components/ui/PageLoader";
+import { TopProgressBar } from "./components/ui/TopProgressBar";
 
 // page layouts
 const LazyMainLayout = lazy(() => import("./layout/MainLayout"));
@@ -84,7 +85,10 @@ const LazyClientsLandingPage = lazy(
 function App() {
   return (
     <>
-      <Suspense fallback={<LoadingState />}>
+      {/* Gold bar at the top whenever a request is running (see utils/activity.js) */}
+      <TopProgressBar />
+      {/* Shown while a page's code downloads (pages are lazy-loaded) */}
+      <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<LazyMainLayout />}>
             <Route index element={<LazyHomePage />} />

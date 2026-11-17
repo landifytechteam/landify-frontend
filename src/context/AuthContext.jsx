@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api, { refreshAccessToken, setAccessToken, setOnSessionExpired } from "../api/axios";
 import { userFromToken } from "../utils/jwt";
 import { getErrorMessage } from "../utils/apiError";
+import { PageLoader } from "../components/ui/PageLoader";
 
 const AuthContext = createContext(null);
 
@@ -30,11 +31,15 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [initializing, setInitializing] = useState(true);
+  // Full-screen "Signing you in/out…" message while the session changes (null = none)
+  const [busyMessage, setBusyMessage] = useState(null);
+  const [loggedOutOnPurpose, setLoggedOutOnPurpose] = useState(false);
   const navigate = useNavigate();
   const restored = useRef(false);
 
   // Save the token + user after login / Google / anything that signs in
   const startSession = useCallback((accessToken, userData) => {
+    setLoggedOutOnPurpose(false);
     setAccessToken(accessToken);
     const next = userData ?? userFromToken(accessToken);
     setUser(next);
@@ -100,7 +105,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (credentials) => {
+    setBusyMessage("Signing you in…");
     const data = await request(() => api.post("/auth/login", credentials), "Login failed. Check your email and password.");
+    setBusyMessage(null);
     if (!data) return null;
     startSession(data.accessToken, data.user);
     return data.user; // the page uses this to pick the dashboard
@@ -111,7 +118,9 @@ export const AuthProvider = ({ children }) => {
   // user picked. Login leaves it out (existing accounts keep their type).
   const loginWithGoogle = async (idToken, accountType) => {
     const body = accountType ? { idToken, accountType } : { idToken };
+    setBusyMessage("Signing you in with Google…");
     const data = await request(() => api.post("/auth/google", body), "Google sign-in failed. Try again.");
+    setBusyMessage(null);
     if (!data?.accessToken) {
       if (data) setError("Google sign-in didn't return a session. Ask the backend dev to return accessToken + user like /auth/login.");
       return null;
@@ -121,17 +130,23 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    setBusyMessage("Signing you out…");
     try {
       await api.post("/auth/logout");
     } catch {
       // even if this fails, log out on this device
     } finally {
+      // Mark this as a deliberate logout. ProtectedRoute then doesn't remember
+      // the current page as "return here after login" (it used to, so logging
+      // out from Settings and back in landed on Settings, even for another user).
+      setLoggedOutOnPurpose(true);
       endSession();
-      navigate("/login");
+      navigate("/login", { replace: true });
+      setBusyMessage(null);
     }
   };
 
-  // Body: { fullName, email, phone, password, accountType: "Client" | "Sales Partner" | "Company Admin", country, state }
+  // Body: { fullName, email, phone, password, confirmPassword, accountType: "Client" | "Sales Partner" | "Company Admin", country, state }
   // Returns the response data ({ userId, debugOtp, ... }) or null.
   const register = (payload) =>
     request(() => api.post("/auth/register", { country: "Nigeria", ...payload }), "Registration failed. Please try again.");
@@ -148,8 +163,9 @@ export const AuthProvider = ({ children }) => {
     return request(() => api.post(path, { email }), "We couldn't send a new code. Wait a minute and try again.", { quiet: true });
   };
 
-  const requestPasswordReset = async ({ email }) =>
-    Boolean(await request(() => api.post("/auth/forgot-password", { email }), "We couldn't send the reset code. Try again shortly."));
+  // Returns the response data (may include a test-mode code, see debugCodeOf), or null.
+  const requestPasswordReset = ({ email }) =>
+    request(() => api.post("/auth/forgot-password", { email }), "We couldn't send the reset code. Try again shortly.");
 
   // `token` is the 6-digit code from the reset email
   const resetPassword = async ({ email, token, newPassword }) =>
@@ -164,6 +180,7 @@ export const AuthProvider = ({ children }) => {
         clearError,
         initializing,
         isAuthenticated: Boolean(user),
+        loggedOutOnPurpose,
         login,
         loginWithGoogle,
         logout,
@@ -177,6 +194,8 @@ export const AuthProvider = ({ children }) => {
       }}
     >
       {children}
+      {/* Covers the page (and blocks double clicks) while signing in or out */}
+      {busyMessage && <PageLoader overlay label={busyMessage} />}
     </AuthContext.Provider>
   );
 };

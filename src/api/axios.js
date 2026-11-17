@@ -1,4 +1,5 @@
 import axios from "axios";
+import { activity } from "../utils/activity";
 
 // .env  →  VITE_BASE_URL=https://landify-backend.onrender.com/api/v1
 // Every route (auth included) lives under /api/v1, so paths here start at /auth, /properties...
@@ -18,6 +19,23 @@ let onSessionExpired = () => {};
 export const setOnSessionExpired = (fn) => {
   onSessionExpired = fn;
 };
+
+// 0. Count running requests so the top progress bar can show (utils/activity.js).
+//    Registered first, so every response, success or error, is counted down once.
+api.interceptors.request.use((config) => {
+  activity.start();
+  return config;
+});
+api.interceptors.response.use(
+  (response) => {
+    activity.done();
+    return response;
+  },
+  (error) => {
+    activity.done();
+    return Promise.reject(error);
+  },
+);
 
 // 1. Attach the access token to every request
 api.interceptors.request.use((config) => {

@@ -9,6 +9,7 @@ import { Avatar } from "../../components/salespartner/shared";
 import { useToast } from "../../components/dashboard/useToast";
 import { Reveal } from "../../components/ui/Reveal";
 import { isNigerianPhone, isStrongPassword } from "../../utils/validation";
+import { track } from "../../utils/activity";
 
 // Left menu: each entry scrolls to its panel below
 const SECTIONS = [
@@ -187,7 +188,7 @@ function NotificationsPanel() {
   const flip = async (key, value) => {
     setOverrides((o) => ({ ...o, [key]: value }));
     try {
-      await partnerApi.updateNotificationPrefs({ [key]: value });
+      await track(partnerApi.updateNotificationPrefs({ [key]: value })); // track: top progress bar
     } catch {
       setOverrides((o) => ({ ...o, [key]: !value }));
       toast("Couldn't save that setting. Try again.", "error");

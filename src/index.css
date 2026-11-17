@@ -102,6 +102,22 @@ body {
   animation: bar-grow 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Loading overlay fades in; the dot in the loader ring gently pulses */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fade-in 200ms ease-out both;
+}
+@keyframes pulse-soft {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.6); opacity: 0.5; }
+}
+.animate-pulse-soft {
+  animation: pulse-soft 1.4s ease-in-out infinite;
+}
+
 /* The sticky navbar is 6rem tall, so links like /#about stop just below it
    instead of hiding the section title underneath the bar */
 section[id],
@@ -119,5 +135,7 @@ footer[id] {
   .animate-hero-zoom,
   .animate-nav-drop,
   .animate-menu-pop,
-  .animate-bar-grow { animation: none; }
+  .animate-bar-grow,
+  .animate-fade-in,
+  .animate-pulse-soft { animation: none; }
 }

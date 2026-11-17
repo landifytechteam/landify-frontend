@@ -15,3 +15,10 @@ export function maskEmail(email = "") {
   const visible = local.length > 4 ? local.slice(0, -4) : local.slice(0, 1);
   return `${visible}****@${domain}`;
 }
+/**
+ * The test-mode code some auth responses include while email delivery is off
+ * (signup: `debugOtp`; reset: the name isn't documented, so common ones are tried).
+ * Only ever shown under `npm run dev`.
+ */
+export const debugCodeOf = (data) =>
+  data?.debugOtp ?? data?.debugToken ?? data?.debugCode ?? data?.resetToken ?? data?.data?.debugOtp ?? null;

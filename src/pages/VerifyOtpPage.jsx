@@ -6,7 +6,7 @@ import { OtpInput } from "../components/auth/OtpInput";
 import { SubmitButton } from "../components/auth/SubmitButton";
 import { OrDivider } from "../components/auth/SocialAuth";
 import { authRoutes } from "../data/auth";
-import { maskEmail } from "../utils/apiError";
+import { debugCodeOf, maskEmail } from "../utils/apiError";
 import useAuth from "../context/useAuth";
 
 const CODE_LENGTH = 6;
@@ -95,7 +95,7 @@ export default function VerifyOtpPage() {
     const sent = await resendOtp({ email, purpose });
     setResending(false);
     if (!sent) return;
-    if (sent.debugOtp) setDebugOtp(sent.debugOtp);
+    if (debugCodeOf(sent)) setDebugOtp(debugCodeOf(sent));
 
     setCode(emptyCode());
     setSecondsLeft(RESEND_SECONDS);
@@ -146,7 +146,7 @@ export default function VerifyOtpPage() {
 
         {/* The backend sends `debugOtp` while email delivery is in test mode.
             import.meta.env.DEV is true only under `npm run dev`, so it never shows on the live site. */}
-        {import.meta.env.DEV && debugOtp && purpose === "signup" && (
+        {import.meta.env.DEV && debugOtp && (
           <p className="rounded-md border border-dashed border-gold-500 bg-[#fbf6e6] px-3 py-2 text-center text-sm text-ink">
             Test mode code: <span className="font-semibold tracking-[0.3em]">{debugOtp}</span>
           </p>

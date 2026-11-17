@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getErrorMessage } from "../../utils/apiError";
+import { track } from "../../utils/activity";
 
 /**
  * Load data from an API function and track loading + error state.
@@ -29,8 +30,8 @@ export function useRequest(fn, params) {
   useEffect(() => {
     if (params === null) return;
     let cancelled = false; // ignore answers that arrive after a newer request started
-    fnRef
-      .current(params)
+    // track(): the top progress bar shows while this loads (mock data included)
+    track(fnRef.current(params))
       .then((data) => !cancelled && setState({ data, error: null, doneFor: requestId }))
       .catch((err) => !cancelled && setState((s) => ({ ...s, error: getErrorMessage(err, "Couldn't load this data."), doneFor: requestId })));
     return () => {
@@ -61,7 +62,7 @@ export function useAction(fn) {
       setBusy(true);
       setError(null);
       try {
-        return (await fn(...args)) ?? true;
+        return (await track(fn(...args))) ?? true;
       } catch (err) {
         setError(getErrorMessage(err, "Something went wrong. Please try again."));
         return null;

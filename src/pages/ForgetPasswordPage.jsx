@@ -8,6 +8,7 @@ import { OrDivider } from "../components/auth/SocialAuth";
 import { authRoutes } from "../data/auth";
 import { isEmail } from "../utils/validation";
 import useAuth from "../context/useAuth";
+import { debugCodeOf } from "../utils/apiError";
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
@@ -28,10 +29,11 @@ export default function ForgotPasswordPage() {
     }
 
     const cleanEmail = email.trim();
-    const sent = await requestPasswordReset({ email: cleanEmail });
-    if (!sent) return;
+    const data = await requestPasswordReset({ email: cleanEmail });
+    if (!data) return;
 
-    navigate(authRoutes.otp, { state: { email: cleanEmail, purpose: "reset" } });
+    // debugOtp: test-mode code, if the backend sent one (shown only in local dev)
+    navigate(authRoutes.otp, { state: { email: cleanEmail, purpose: "reset", debugOtp: debugCodeOf(data) } });
   }
 
   return (
