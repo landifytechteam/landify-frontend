@@ -5,9 +5,10 @@ import { useDebouncedValue, useRequest } from "../../context/hooks";
 import { Button, ErrorState, LoadingState } from "../../components/dashboard/ui";
 import { SearchInput, Select } from "../../components/dashboard/controls";
 import { PROPERTY_TYPES } from "../../data/landing";
+import { Reveal } from "../../components/ui/Reveal";
 
 /**
- * /properties: every available property on the platform (GET /v1/public/properties).
+ * /properties: every available property on the platform (GET /public/properties).
  * Filters live in the URL (?city=Lekki&propertyType=Residential), so results can be shared.
  * Also used at /salespartner/properties, so links below are relative to the current URL.
  */
@@ -33,15 +34,17 @@ export default function PublicPropertiesPage() {
   return (
     // MainLayout already renders the Navbar, Footer and <main>
     <div className="mx-auto max-w-7xl px-4 pb-24 sm:px-6 xl:px-0">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">Properties</p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-ink sm:text-5xl">Find land you can trust.</h1>
-        <p className="mt-3 text-body">Every listing is from a verified company and reviewed before it goes live.</p>
+        <Reveal>
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">Properties</p>
+          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-ink sm:text-5xl">Find land you can trust.</h1>
+          <p className="mt-3 text-body">Every listing is from a verified company and reviewed before it goes live.</p>
+        </Reveal>
 
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <Reveal delay={150} className="mt-8 flex flex-col gap-3 sm:flex-row">
           <SearchInput value={city} onChange={(v) => setParam("city", v)} placeholder="Search by city, e.g. Lekki" className="sm:flex-1" />
           <Select value={propertyType} onChange={(v) => setParam("propertyType", v)} options={PROPERTY_TYPES} placeholder="All property types" className="sm:w-56" />
           {filtered && <Button variant="ghost" onClick={() => setSearchParams({}, { replace: true })}>Clear filters</Button>}
-        </div>
+        </Reveal>
 
         <div className="mt-8">
           {error && !data ? (
@@ -59,20 +62,22 @@ export default function PublicPropertiesPage() {
                 {data.length} {data.length === 1 ? "property" : "properties"}
                 {city && ` in “${city}”`}
               </p>
-              <div className={`grid gap-6 sm:grid-cols-2 lg:grid-cols-3 ${loading ? "opacity-60" : ""}`}>
+              {/* New results animate in; cards already shown stay put (same key) */}
+              <div className={`reveal-stagger grid gap-6 sm:grid-cols-2 lg:grid-cols-3 ${loading ? "opacity-60" : ""}`}>
                 {data.map((p) => (
-                  <PropertyCard
-                    key={p.id}
-                    property={{
-                      ...p,
-                      title: p.name,
-                      type: p.propertyType,
-                      image: p.images[0],
-                      href: String(p.id), // relative: /properties/123 or /salespartner/properties/123
-                      status: p.status === "available" ? "For sale" : p.status,
-                      bedrooms: null,
-                    }}
-                  />
+                  <Reveal key={p.id}>
+                    <PropertyCard
+                      property={{
+                        ...p,
+                        title: p.name,
+                        type: p.propertyType,
+                        image: p.images[0],
+                        href: String(p.id), // relative: /properties/123 or /salespartner/properties/123
+                        status: p.status === "available" ? "For sale" : p.status,
+                        bedrooms: null,
+                      }}
+                    />
+                  </Reveal>
                 ))}
               </div>
             </>

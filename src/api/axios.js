@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// .env  →  VITE_BASE_URL=https://landify-backend.onrender.com/api
-// Auth lives at /auth/... and everything else at /v1/..., both under /api.
+// .env  →  VITE_BASE_URL=https://landify-backend.onrender.com/api/v1
+// Every route (auth included) lives under /api/v1, so paths here start at /auth, /properties...
 const api = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
   withCredentials: true, // send the httpOnly refresh-token cookie

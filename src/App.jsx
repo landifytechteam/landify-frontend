@@ -70,6 +70,11 @@ const LazyLeads = lazy(() => import("./pages/company/LeadsPage"));
 const LazySalesPartnerLandingPage = lazy(
   () => import("./pages/salespartner/SalesPartnerLandingPage"),
 );
+const LazyPartnerClientsPage = lazy(() => import("./pages/salespartner/PartnerClientsPage"));
+const LazyPartnerPropertiesPage = lazy(() => import("./pages/salespartner/PartnerPropertiesPage"));
+const LazyPartnerCommissionsPage = lazy(() => import("./pages/salespartner/PartnerCommissionsPage"));
+const LazyCommissionDetailPage = lazy(() => import("./pages/salespartner/CommissionDetailPage"));
+const LazyPartnerSettingsPage = lazy(() => import("./pages/salespartner/PartnerSettingsPage"));
 
 // clients
 const LazyClientsLandingPage = lazy(
@@ -141,9 +146,13 @@ function App() {
               }
             >
               <Route index element={<LazySalesPartnerLandingPage />} />
-              {/* Same approved, listed properties the public sees */}
-              <Route path="properties" element={<LazyPropertiesPage />} />
+              <Route path="clients" element={<LazyPartnerClientsPage />} />
+              {/* The company's approved, listed properties; details reuse the public page */}
+              <Route path="properties" element={<LazyPartnerPropertiesPage />} />
               <Route path="properties/:propertyId" element={<LazyPropertyDetailPage />} />
+              <Route path="commissions" element={<LazyPartnerCommissionsPage />} />
+              <Route path="commissions/:commissionId" element={<LazyCommissionDetailPage />} />
+              <Route path="settings" element={<LazyPartnerSettingsPage />} />
               <Route path="*" element={<LazyNotFoundPage />} />
             </Route>
           </Route>

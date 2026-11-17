@@ -4,12 +4,12 @@ import { formatNaira } from "../../data/landing";
 
 export function PropertyCard({ property }) {
   return (
-    <article className="overflow-hidden rounded-2xl bg-white shadow-[0_8px_30px_rgba(19,38,30,0.06)]">
+    <article className="group h-full overflow-hidden rounded-2xl bg-white shadow-[0_8px_30px_rgba(19,38,30,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_44px_-12px_rgba(19,38,30,0.22)]">
       <div className="relative aspect-41/27">
         <img
           src={property.image}
           alt={property.title}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
           loading="lazy"
         />
         {property.isDemo && (

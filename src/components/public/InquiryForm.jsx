@@ -9,7 +9,7 @@ const isEmail = (v) => /^\S+@\S+\.\S+$/.test(v);
 const isPhone = (v) => /^\+?[\d\s-]{10,16}$/.test(v.trim());
 
 /**
- * "I'm interested" form on a property page. Sends POST /v1/public/inquiries,
+ * "I'm interested" form on a property page. Sends POST /public/inquiries,
  * which becomes a lead in the company's Leads page.
  */
 export function InquiryForm({ property }) {

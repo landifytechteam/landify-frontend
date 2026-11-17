@@ -3,6 +3,7 @@ import { ButtonLink } from "../ui/Button";
 import { Eyebrow } from "../ui/Eyebrow";
 import { routes } from "../../data/landing";
 import { PropertyCard } from "./PropertyCard";
+import { Reveal } from "../ui/Reveal";
 
 export function FeaturedProperties({ properties }) {
   const hasDemo = properties.some((p) => p.isDemo);
@@ -10,8 +11,10 @@ export function FeaturedProperties({ properties }) {
   return (
     <section className="py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 xl:px-0">
-        <Eyebrow>Featured properties</Eyebrow>
-        <div className="mt-4 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+        <Reveal>
+          <Eyebrow>Featured properties</Eyebrow>
+        </Reveal>
+        <Reveal className="mt-4 flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <div>
             <h2 className="text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
               Find a place that feels like you.
@@ -21,11 +24,13 @@ export function FeaturedProperties({ properties }) {
           <ButtonLink href={routes.properties} variant="outline" arrow>
             Explore All Properties
           </ButtonLink>
-        </div>
+        </Reveal>
 
-        <div className="mt-9 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="reveal-stagger mt-9 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {properties.map((p) => (
-            <PropertyCard key={p.id} property={p} />
+            <Reveal key={p.id}>
+              <PropertyCard property={p} />
+            </Reveal>
           ))}
         </div>
 

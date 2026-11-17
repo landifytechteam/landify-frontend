@@ -3,11 +3,11 @@ import api from "../../api/axios";
 // ---------------------------------------------------------------------------
 // Company leads (logged-in Company Admin; the backend scopes them to the
 // admin's company and answers 403 "Company context required" otherwise).
-//   GET  /v1/leads
-//   POST /v1/leads        { fullName, email, phone, status }
-//   PUT  /v1/leads/:id    { ...changed fields }
+//   GET  /leads
+//   POST /leads        { fullName, email, phone, status }
+//   PUT  /leads/:id    { ...changed fields }
 //
-// Public inquiries (POST /v1/public/inquiries) show up here as leads too.
+// Public inquiries (POST /public/inquiries) show up here as leads too.
 // The response fields aren't documented yet, so `toLead` accepts common names.
 // ---------------------------------------------------------------------------
 
@@ -46,16 +46,16 @@ export function toLead(raw = {}) {
 
 export const leadsApi = {
   async getLeads() {
-    const res = await api.get("/v1/leads");
+    const res = await api.get("/leads");
     return pickList(res.data).map(toLead);
   },
   async createLead(body) {
-    const res = await api.post("/v1/leads", body);
+    const res = await api.post("/leads", body);
     return toLead(pickOne(res.data));
   },
   /** changes: e.g. { status: "CONTACTED" }. The page updates its own copy of the lead. */
   async updateLead(id, changes) {
-    const res = await api.put(`/v1/leads/${id}`, changes);
+    const res = await api.put(`/leads/${id}`, changes);
     return res.data;
   },
 };

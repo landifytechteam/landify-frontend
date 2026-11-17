@@ -2,29 +2,30 @@ import { Check } from "lucide-react";
 import { ButtonLink } from "../ui/Button";
 import { Eyebrow } from "../ui/Eyebrow";
 import { images, routes } from "../../data/landing";
+import { Reveal } from "../ui/Reveal";
 
 export function About() {
   return (
     <section id="about" className="bg-white py-24">
       <div className="mx-auto grid max-w-7xl items-center gap-16 px-4 sm:px-6 lg:grid-cols-[552px_1fr] lg:gap-25 xl:px-0">
-        <div className="relative aspect-552/520 overflow-hidden rounded-2xl">
+        <Reveal from="left" className="group relative aspect-552/520 overflow-hidden rounded-2xl">
           <img
             src={images.about}
             alt="Bright living room with tall windows and indoor plants"
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
             loading="lazy"
           />
-          <div className="absolute bottom-6 left-6 max-w-77.5 rounded-lg bg-white p-5 shadow-lg">
+          <Reveal from="zoom" delay={400} className="absolute bottom-6 left-6 max-w-77.5 rounded-lg bg-white p-5 shadow-lg">
             <p className="text-[10px] uppercase tracking-wide text-brand-600">
               More than an address
             </p>
             <p className="mt-2 text-[22px] leading-snug text-ink">
               Room for the life you’re building.
             </p>
-          </div>
-        </div>
+          </Reveal>
+        </Reveal>
 
-        <div>
+        <Reveal from="right" delay={150}>
           <Eyebrow>About Landify</Eyebrow>
           <h2 className="mt-6 text-4xl font-semibold leading-tight tracking-tight text-ink sm:text-5xl">
             Real estate, connected.
@@ -52,7 +53,7 @@ export function About() {
           <ButtonLink href={routes.about} variant="outline" arrow className="mt-6">
             Get to Know Landify
           </ButtonLink>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

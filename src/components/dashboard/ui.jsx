@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import { AlertCircle, ArrowDown, BarChart2, Info, LoaderCircle, ShieldCheck } from "lucide-react";
+import { useReveal } from "../ui/useReveal";
 
 /** Eyebrow + big title + subtitle at the top of a dashboard page, with optional actions. */
 export function PageHeader({ eyebrow, title, subtitle, actions, children }) {
+  const reveal = useReveal();
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div {...reveal} className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="min-w-0">
         {eyebrow && <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">{eyebrow}</p>}
         <h1 className="mt-2 text-3xl tracking-tight text-ink sm:text-[34px]">{title}</h1>
@@ -25,8 +27,10 @@ export function PageHeader({ eyebrow, title, subtitle, actions, children }) {
 export function StatCard({ label, value, detail, icon: Icon = BarChart2, tone, active, onClick, onDetails }) {
   const dark = tone === "dark" || active;
   const Tag = onClick ? "button" : "div";
+  const reveal = useReveal();
   return (
     <Tag
+      {...reveal}
       type={onClick ? "button" : undefined}
       onClick={onClick}
       aria-pressed={onClick ? Boolean(active) : undefined}
@@ -59,13 +63,15 @@ export function StatCard({ label, value, detail, icon: Icon = BarChart2, tone, a
 }
 
 export function StatGrid({ children }) {
-  return <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{children}</div>;
+  // reveal-stagger: the stat cards appear one after another
+  return <div className="reveal-stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{children}</div>;
 }
 
 /** White card with a title row; `footer` renders in a grey strip at the bottom. */
 export function Panel({ title, subtitle, action, footer, children, className = "", bodyClassName = "", id, flush }) {
+  const reveal = useReveal();
   return (
-    <section id={id} className={`flex flex-col overflow-hidden rounded-xl border border-line bg-white ${className}`}>
+    <section {...reveal} id={id} className={`flex flex-col overflow-hidden rounded-xl border border-line bg-white ${className}`}>
       {(title || action) && (
         <div className="flex flex-col gap-3 px-5 pt-5 sm:flex-row sm:items-start sm:justify-between sm:px-6">
           <div className="min-w-0">
@@ -91,6 +97,7 @@ const badgeTones = {
   green: "bg-brand-50 text-brand-600",
   gold: "bg-[#f6ecc9] text-[#8a6a10]",
   red: "bg-red-50 text-red-700",
+  blue: "bg-sky-50 text-sky-700",
   grey: "bg-canvas text-body",
 };
 const statusTone = {

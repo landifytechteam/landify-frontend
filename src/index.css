@@ -9,6 +9,9 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 
+  /* Extra breakpoint between xl (1280) and 2xl (1536): use as wide:grid-cols-4 */
+  --breakpoint-wide: 87.5rem; /* 1400px */
+
   /* Greens */
   --color-brand-50: #eaf1eb;   /* icon tiles, step circles */
   --color-brand-600: #0b5d3b;  /* primary buttons, CTA band, links */
@@ -33,4 +36,88 @@ html {
 
 body {
   @apply bg-canvas text-ink antialiased;
+}
+/* ---------------------------------------------------------------------------
+ * Scroll reveal. useReveal() / <Reveal> add data-reveal="up|left|right|zoom|fade"
+ * and, once the element is on screen, data-visible. The transition does the rest.
+ * The final state is `transform: none` (not translate(0)) on purpose: a leftover
+ * transform would break position: fixed/sticky children such as modals.
+ * ------------------------------------------------------------------------- */
+[data-reveal] {
+  opacity: 0;
+  transition:
+    opacity 700ms ease-out,
+    transform 800ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+[data-reveal="up"] { transform: translateY(28px); }
+[data-reveal="left"] { transform: translateX(-40px); }
+[data-reveal="right"] { transform: translateX(40px); }
+[data-reveal="zoom"] { transform: scale(0.94); }
+[data-reveal][data-visible] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Children of .reveal-stagger appear one after another (cards, stat tiles...) */
+.reveal-stagger > :nth-child(2) { --reveal-delay: 90ms; }
+.reveal-stagger > :nth-child(3) { --reveal-delay: 180ms; }
+.reveal-stagger > :nth-child(4) { --reveal-delay: 270ms; }
+.reveal-stagger > :nth-child(5) { --reveal-delay: 360ms; }
+.reveal-stagger > :nth-child(6) { --reveal-delay: 450ms; }
+.reveal-stagger > :nth-child(n + 7) { --reveal-delay: 540ms; }
+
+/* Slow zoom-out on the hero photo when the page opens */
+@keyframes hero-zoom {
+  from { transform: scale(1.08); }
+  to { transform: scale(1); }
+}
+.animate-hero-zoom {
+  animation: hero-zoom 1600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Navbar: drops in on page load; the mobile menu pops open */
+@keyframes nav-drop {
+  from { opacity: 0; transform: translateY(-100%); }
+  to { opacity: 1; transform: none; }
+}
+.animate-nav-drop {
+  animation: nav-drop 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes menu-pop {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+.animate-menu-pop {
+  animation: menu-pop 220ms ease-out both;
+  transform-origin: top center;
+}
+
+/* Chart bars grow up from the axis (commissions chart) */
+@keyframes bar-grow {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+.animate-bar-grow {
+  animation: bar-grow 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* The sticky navbar is 6rem tall, so links like /#about stop just below it
+   instead of hiding the section title underneath the bar */
+section[id],
+footer[id] {
+  scroll-margin-top: 6rem;
+}
+
+/* People who turn on "reduce motion" in their device settings get no animation */
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .animate-hero-zoom,
+  .animate-nav-drop,
+  .animate-menu-pop,
+  .animate-bar-grow { animation: none; }
 }

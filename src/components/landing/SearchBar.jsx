@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowUpRight, Building2, ChevronDown, MapPin, Wallet } from "lucide-react";
 import { routes, searchOptions } from "../../data/landing";
+import { Reveal } from "../ui/Reveal";
 
 function SearchField({ id, label, placeholder, icon, options, value, onChange }) {
   const Icon = icon;
@@ -54,7 +55,7 @@ export function SearchBar() {
 
   return (
     <section className="mt-8 bg-white">
-      <form onSubmit={handleSubmit} className="mx-auto max-w-7xl px-4 py-8 sm:px-6 xl:px-0">
+      <Reveal as="form" onSubmit={handleSubmit} className="mx-auto max-w-7xl px-4 py-8 sm:px-6 xl:px-0">
         <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-baseline">
           <h2 className="text-xl font-semibold text-ink">What does your next chapter look like?</h2>
           <p className="text-sm text-body">A home. An investment. A place to begin.</p>
@@ -95,7 +96,7 @@ export function SearchBar() {
             <ArrowUpRight className="h-4 w-4" aria-hidden />
           </button>
         </div>
-      </form>
+      </Reveal>
     </section>
   );
 }

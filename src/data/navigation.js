@@ -73,12 +73,13 @@ export const navForRole = {
     userTitle: "Sales partner",
     scopeLabel: "My sales",
     workspace: { eyebrow: "Partner workspace", name: "Sales Partner", icon: ClipboardList },
-    searchPlaceholder: "Search properties or clients",
+    searchPlaceholder: "Search properties, clients, or anything…",
     items: [
-      { label: "Overview", to: "/salespartner", icon: LayoutGrid, end: true },
-      { label: "Properties", to: "/salespartner/properties", icon: LandPlot },
-      { label: "My clients", to: "/salespartner/clients", icon: Users },
+      { label: "Dashboard", to: "/salespartner", icon: LayoutGrid, end: true },
+      { label: "My Clients", to: "/salespartner/clients", icon: Users },
+      { label: "Properties", to: "/salespartner/properties", icon: Home },
       { label: "Commissions", to: "/salespartner/commissions", icon: Wallet },
+      { label: "Settings", to: "/salespartner/settings", icon: Settings2 },
     ],
   },
   client: {

@@ -22,7 +22,7 @@ const GROUPS = {
   converted: (l) => l.status === "CONVERTED",
 };
 
-/** /admin/leads: the company's leads (GET/POST/PUT /v1/leads). */
+/** /admin/leads: the company's leads (GET/POST/PUT /leads). */
 export default function LeadsPage() {
   const toast = useToast();
   const { data, loading, error, reload } = useRequest(leadsApi.getLeads, {});

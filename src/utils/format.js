@@ -21,15 +21,15 @@ export const fullDate = (value) =>
 /** "06 Oct 2026, 09:42 WAT" */
 export const fullDateTime = (value) => `${fullDate(value)}, ${timeWAT(value)} WAT`;
 
-/** "2 hours ago", "3 days ago" */
+/** "2 hours ago", "1 day ago", "3 days ago" */
 export function timeAgo(value) {
   const minutes = Math.round((Date.now() - toDate(value).getTime()) / 60000);
   if (minutes < 1) return "just now";
   if (minutes < 60) return `${minutes} min ago`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 48) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
   const days = Math.floor(hours / 24);
-  return `${days} days ago`;
+  return `${days} day${days === 1 ? "" : "s"} ago`;
 }
 
 /** ₦18,500,000 */

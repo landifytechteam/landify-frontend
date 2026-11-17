@@ -1,6 +1,7 @@
 import { BadgeCheck, Files, ScanText, ShieldCheck, WalletCards } from "lucide-react";
 import { Eyebrow } from "../ui/Eyebrow";
 import { images } from "../../data/landing";
+import { Reveal } from "../ui/Reveal";
 
 const reasons = [
   {
@@ -34,7 +35,7 @@ export function WhyChooseUs() {
   return (
     <section id="features" className="bg-brand-900 py-24 text-white">
       <div className="mx-auto grid max-w-7xl gap-14 px-4 sm:px-6 lg:grid-cols-[440px_1fr] lg:gap-25 xl:px-0">
-        <div>
+        <Reveal from="left">
           <Eyebrow tone="gold">Why choose us</Eyebrow>
           <h2 className="mt-7 text-4xl font-normal leading-tight sm:text-5xl">
             Big decisions deserve a clearer picture.
@@ -43,11 +44,11 @@ export function WhyChooseUs() {
             Thoughtful tools to help you move forward with more information, less friction and a
             better sense of what comes next.
           </p>
-          <div className="relative mt-8 aspect-440/280 overflow-hidden rounded-xl">
+          <div className="group relative mt-8 aspect-440/280 overflow-hidden rounded-xl">
             <img
               src={images.whyChooseUs}
               alt="Sunlit entrance with a wooden door and tropical plants"
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
               loading="lazy"
             />
           </div>
@@ -55,24 +56,26 @@ export function WhyChooseUs() {
             Always review the terms and carry out your own due diligence before making a property
             commitment.
           </p>
-        </div>
+        </Reveal>
 
         <ul>
           {reasons.map((reason, i) => (
-            <li
+            <Reveal
+              as="li"
               key={reason.title}
-              className={`flex gap-6 py-6 ${i < reasons.length - 1 ? "border-b" : ""} ${
+              delay={i * 100}
+              className={`group flex gap-6 py-6 ${i < reasons.length - 1 ? "border-b" : ""} ${
                 i === 0 ? "border-t" : ""
               } border-white/15`}
             >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white/5">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white/5 transition-colors duration-300 group-hover:bg-gold-500/15">
                 <reason.icon className="h-5 w-5 text-gold-500" aria-hidden />
               </span>
               <div>
                 <h3 className="text-xl">{reason.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-white/80">{reason.body}</p>
               </div>
-            </li>
+            </Reveal>
           ))}
         </ul>
       </div>

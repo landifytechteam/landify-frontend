@@ -2,6 +2,7 @@ import { ArrowLeft, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Logo } from "../ui/Logo";
 import { authRoutes } from "../../data/auth";
+import { Reveal } from "../ui/Reveal";
 
 /**
  * Centred card used by the smaller auth steps (OTP, forgot password, reset password).
@@ -11,7 +12,7 @@ import { authRoutes } from "../../data/auth";
 export function CenteredAuthCard({ icon: Icon, accent = "dot", title, subtitle, children }) {
   return (
     <div className="flex min-h-screen flex-col items-center bg-white px-4 py-8 sm:py-24">
-      <div className="w-full max-w-200 rounded-2xl border border-line bg-white px-5 py-8 shadow-[0_12px_40px_-24px_rgba(19,38,30,0.25)] sm:min-h-200 sm:px-10 sm:py-10">
+      <Reveal from="zoom" className="w-full max-w-200 rounded-2xl border border-line bg-white px-5 py-8 shadow-[0_12px_40px_-24px_rgba(19,38,30,0.25)] sm:min-h-200 sm:px-10 sm:py-10">
         <div className="flex items-center justify-between gap-4">
           <Logo />
           <Link
@@ -31,7 +32,7 @@ export function CenteredAuthCard({ icon: Icon, accent = "dot", title, subtitle, 
           <div className="mt-3 text-[15px] leading-6 text-body">{subtitle}</div>
           <div className="mt-8 text-left">{children}</div>
         </main>
-      </div>
+      </Reveal>
 
       <footer className="mt-12 flex w-full max-w-200 flex-col items-center justify-between gap-3 text-xs text-body sm:flex-row">
         <p>© {new Date().getFullYear()} Landify. All rights reserved.</p>

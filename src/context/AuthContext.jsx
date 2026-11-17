@@ -74,6 +74,16 @@ export const AuthProvider = ({ children }) => {
 
   const clearError = useCallback(() => setError(null), []);
 
+  // After a profile edit: merge the saved fields into the logged-in user
+  // (so the sidebar name updates straight away)
+  const updateUser = useCallback((changes) => {
+    setUser((current) => {
+      const next = current ? { ...current, ...changes } : current;
+      rememberUser(next);
+      return next;
+    });
+  }, []);
+
   // Runs an API call with loading + error handling. Returns the response data, or null.
   const request = async (call, fallbackMessage, { quiet = false } = {}) => {
     if (!quiet) setLoading(true);
@@ -163,6 +173,7 @@ export const AuthProvider = ({ children }) => {
         requestPasswordReset,
         resetPassword,
         endSession,
+        updateUser,
       }}
     >
       {children}

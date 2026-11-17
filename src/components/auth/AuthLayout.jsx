@@ -2,6 +2,7 @@ import { ArrowUpRight, LockKeyhole } from "lucide-react";
 import { AuthHero } from "./AuthHero";
 import { Logo } from "../ui/Logo";
 import { authRoutes } from "../../data/auth";
+import { Reveal } from "../ui/Reveal";
 
 /**
  * Split layout for auth screens: photo panel on the left (desktop only),
@@ -33,7 +34,7 @@ export function AuthLayout({ badge, children }) {
         </div>
 
         <div className="flex flex-1 items-center justify-center py-8">
-          <div className="w-full max-w-123">{children}</div>
+          <Reveal className="w-full max-w-123">{children}</Reveal>
         </div>
       </main>
     </div>

@@ -2,9 +2,9 @@ import api from "../../api/axios";
 
 // ---------------------------------------------------------------------------
 // Public storefront: no login needed.
-//   GET  /v1/public/properties?companyId&city&propertyType
-//   GET  /v1/public/properties/:id
-//   POST /v1/public/inquiries
+//   GET  /public/properties?companyId&city&propertyType
+//   GET  /public/properties/:id
+//   POST /public/inquiries
 //
 // The Swagger docs don't show the property fields yet, so `toProperty` below
 // accepts the common names (_id or id, title or name, ...) and turns every
@@ -63,18 +63,18 @@ export const publicApi = {
   /** filters: { companyId?, city?, propertyType? }. Empty values are left out. */
   async getProperties(filters = {}) {
     const params = Object.fromEntries(Object.entries(filters).filter(([, v]) => v));
-    const res = await api.get("/v1/public/properties", { params });
+    const res = await api.get("/public/properties", { params });
     return pickList(res.data).map(toProperty);
   },
 
   async getProperty(id) {
-    const res = await api.get(`/v1/public/properties/${id}`);
+    const res = await api.get(`/public/properties/${id}`);
     return toProperty(pickOne(res.data));
   },
 
   /** body: { companyId, propertyId, fullName, email, phone, message } */
   async submitInquiry(body) {
-    const res = await api.post("/v1/public/inquiries", body);
+    const res = await api.post("/public/inquiries", body);
     return res.data;
   },
 };

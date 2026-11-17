@@ -3,12 +3,13 @@ import { Link } from "react-router-dom";
 import { Logo } from "../ui/Logo";
 import { AppLink } from "../ui/AppLink";
 import { contact, footerColumns, routes } from "../../data/landing";
+import { Reveal } from "../ui/Reveal";
 
 export function Footer() {
   return (
     <footer id="contact" className="bg-white">
       <div className="mx-auto max-w-7xl px-4 pt-16 sm:px-6 xl:px-0">
-        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-[445px_1fr_1fr_265px]">
+        <Reveal className="grid gap-12 md:grid-cols-2 lg:grid-cols-[445px_1fr_1fr_265px]">
           <div>
             <Logo />
             <p className="mt-6 max-w-77.5 text-sm leading-6 text-body">
@@ -53,7 +54,7 @@ export function Footer() {
               <li>{contact.address}</li>
             </ul>
           </div>
-        </div>
+        </Reveal>
 
         <div className="mt-16 flex flex-col justify-between gap-4 border-t border-line py-7 text-xs text-body sm:flex-row">
           <p>© {new Date().getFullYear()} Landify. All rights reserved.</p>
